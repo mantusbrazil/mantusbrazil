@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football Store - Camisas de Futebol Oficial</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-logo">
+        <span class="logo-main">MANTUS</span><span class="logo-accent">BRAZIL</span>
+      </div>
+
+      <ul class="navbar-menu">
+        <li><a href="#lancamentos" class="nav-link">Lançamentos</a></li>
+        <li><a href="#times" class="nav-link">Times</a></li>
+        <li><a href="#promocoes" class="nav-link">Promoções</a></li>
+        <li><a href="#personalizar" class="nav-link">Personalizar</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        <div class="search-box">
+          <input id="product-search" type="search" placeholder="Buscar" class="search-input" />
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </div>
+        <button id="btn-ver-carrinho" class="btn-cart" type="button" aria-label="Abrir carrinho">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+          <span id="badge-total-itens" class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main">
+    <div class="container">
+
+      <!-- ============ HERO SECTION ============ -->
+      <section class="hero">
+        <div class="hero-carousel">
+          <div class="hero-slide" style="background: linear-gradient(135deg, #8B2FBF 0%, #5E1C94 100%);">
+            <div class="hero-content">
+              <span class="hero-badge">PRÉ-VENDA</span>
+              <h1 class="hero-title">Lançamento<br />Exclusivo</h1>
+              <p class="hero-subtitle">Edição limitada – Champions League 2026</p>
+              <button class="btn-primary btn-large">Comprar agora</button>
+            </div>
+            <div class="hero-image">
+              <img src="img/brasil-1-2627.jpg" alt="Camisa exclusiva" />
+            </div>
+          </div>
+        </div>
+
+        <button class="hero-nav prev" aria-label="Slide anterior">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="hero-nav next" aria-label="Próximo slide">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <div class="hero-indicators">
+          <span class="indicator active"></span>
+          <span class="indicator"></span>
+          <span class="indicator"></span>
+        </div>
+      </section>
+
+      <!-- ============ PRODUTOS EM DESTAQUE ============ -->
+      <section class="featured-section" id="lancamentos">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Produtos em Destaque</h2>
+            <p class="section-subtitle">Camisas oficiais dos principais times do mundo</p>
+          </div>
+          <a href="#todos" class="link-primary">Ver todos</a>
+        </div>
+
+        <div class="products-filter">
+          <select id="product-filter" class="filter-select" aria-label="Filtrar por disponibilidade">
+            <option value="all">Todos</option>
+            <option value="instock">Em estoque</option>
+            <option value="preorder">Sob encomenda</option>
+          </select>
+        </div>
+
+        <div id="produtos" class="products-grid"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- ============ DRAWER DO CARRINHO ============ -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+
+  <aside id="carrinho" class="cart-drawer" aria-hidden="true">
+    <div class="cart-header">
+      <h2>Seu Carrinho</h2>
+      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div id="lista-carrinho" class="cart-items-list"></div>
+
+    <div class="cart-empty-state" id="cart-empty-state">
+      <p>Seu carrinho está vazio</p>
+      <p class="text-muted">Selecione uma camisa para começar</p>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-summary">
+        <span id="cart-summary-text">Nenhum item no carrinho</span>
+      </div>
+      <div class="cart-total">
+        <div class="total-label">Total</div>
+        <strong id="total-pedido" class="total-amount">R$ 0,00</strong>
+      </div>
+      <button id="finalizar" class="btn-primary btn-full" type="button">Finalizar no WhatsApp</button>
+    </div>
+  </aside>
+
+  <!-- ============ TOAST NOTIFICATIONS ============ -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
