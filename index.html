@@ -13,7 +13,8 @@
   <nav class="navbar">
     <div class="navbar-container">
       <div class="navbar-logo">
-        <span class="logo-main">MANTUS</span><span class="logo-accent">BRAZIL</span>
+        <span class="logo-main">MANTUS</span>
+        <span class="logo-sub">BRAZIL</span>
       </div>
 
       <ul class="navbar-menu">
@@ -48,36 +49,21 @@
     <div class="container">
 
       <!-- ============ HERO SECTION ============ -->
-      <section class="hero">
+      <section class="hero" id="promocoes">
         <div class="hero-carousel">
-          <div class="hero-slide" style="background: linear-gradient(135deg, #8B2FBF 0%, #5E1C94 100%);">
-            <div class="hero-content">
-              <span class="hero-badge">PRÉ-VENDA</span>
-              <h1 class="hero-title">Lançamento<br />Exclusivo</h1>
-              <p class="hero-subtitle">Edição limitada – Champions League 2026</p>
-              <button class="btn-primary btn-large">Comprar agora</button>
-            </div>
-            <div class="hero-image">
-              <img src="img/brasil-1-2627.jpg" alt="Camisa exclusiva" />
-            </div>
+          <div class="offer-carousel">
+            <div id="offers-track" class="offers-track"></div>
+            <button class="offer-nav prev" aria-label="Slide anterior">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="offer-nav next" aria-label="Próximo slide">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
           </div>
-        </div>
-
-        <button class="hero-nav prev" aria-label="Slide anterior">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-        </button>
-        <button class="hero-nav next" aria-label="Próximo slide">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-        </button>
-
-        <div class="hero-indicators">
-          <span class="indicator active"></span>
-          <span class="indicator"></span>
-          <span class="indicator"></span>
         </div>
       </section>
 
@@ -88,7 +74,7 @@
             <h2 class="section-title">Produtos em Destaque</h2>
             <p class="section-subtitle">Camisas oficiais dos principais times do mundo</p>
           </div>
-          <a href="#todos" class="link-primary">Ver todos</a>
+          <a href="#lancamentos" class="link-primary">Ver todos</a>
         </div>
 
         <div class="products-filter">
@@ -100,6 +86,50 @@
         </div>
 
         <div id="produtos" class="products-grid"></div>
+      </section>
+
+      <section class="teams-section" id="times">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Seleção de Times</h2>
+            <p class="section-subtitle">Encontre camisas oficiais dos seus clubes favoritos.</p>
+          </div>
+        </div>
+        <div class="teams-grid">
+          <article class="team-card">
+            <div class="team-logo">BR</div>
+            <div>
+              <h3>Brasil</h3>
+              <p>Camisas 26/27 com garantia de qualidade.</p>
+            </div>
+          </article>
+          <article class="team-card">
+            <div class="team-logo">RM</div>
+            <div>
+              <h3>Real Madrid</h3>
+              <p>Modelos exclusivos com acabamento premium.</p>
+            </div>
+          </article>
+          <article class="team-card">
+            <div class="team-logo">PS</div>
+            <div>
+              <h3>PSG</h3>
+              <p>Visual moderno e estampas oficiais.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="customize-callout" id="personalizar">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Personalize sua camisa</h2>
+            <p class="section-subtitle">Adicione nome e número para tornar seu kit único.</p>
+          </div>
+        </div>
+        <div class="customize-text">
+          <p>Na MantusBrazil, toda camisa personalizada é confeccionada sob encomenda. Escolha o produto, marque a opção de personalização na página de produto e informe o nome e número desejados.</p>
+        </div>
       </section>
     </div>
   </main>
@@ -139,6 +169,50 @@
 
   <!-- ============ TOAST NOTIFICATIONS ============ -->
   <div id="toast-container" class="toast-container"></div>
+
+  <!-- ============ MODAL DE SELEÇÃO DE PRODUTO ============ -->
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title">Selecionar Produto</h2>
+        <button id="close-modal" class="btn-close" aria-label="Fechar modal">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="product-preview">
+          <img id="modal-product-image" src="" alt="Produto" />
+          <div class="product-info">
+            <h3 id="modal-product-name"></h3>
+            <p id="modal-product-price"></p>
+          </div>
+        </div>
+        <form id="product-form">
+          <div class="form-group">
+            <label for="size-select">Tamanho</label>
+            <select id="size-select" required>
+              <option value="">Selecione um tamanho</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="custom-name">Nome (opcional)</label>
+            <input type="text" id="custom-name" placeholder="Digite o nome" maxlength="20" />
+          </div>
+          <div class="form-group">
+            <label for="custom-number">Número (opcional)</label>
+            <input type="text" id="custom-number" placeholder="Digite o número" maxlength="3" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" id="btn-cancel-modal" class="btn-secondary">Cancelar</button>
+            <button type="submit" id="btn-confirm-modal" class="btn-primary">Adicionar ao Carrinho</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

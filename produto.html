@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Produto - MANTUSBRAZIL</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="produto.css" />
+</head>
+<body>
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-logo">
+        <a href="index.html"><span class="logo-main">MANTUSBRAZIL</span></a>
+      </div>
+
+      <ul class="navbar-menu">
+        <li><a href="index.html#lancamentos" class="nav-link">Lançamentos</a></li>
+        <li><a href="index.html#times" class="nav-link">Times</a></li>
+        <li><a href="index.html#promocoes" class="nav-link">Promoções</a></li>
+        <li><a href="index.html#personalizar" class="nav-link">Personalizar</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        <button id="btn-voltar" class="btn-voltar" type="button">← Voltar</button>
+        <button id="btn-ver-carrinho" class="btn-cart" type="button" aria-label="Abrir carrinho">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="9" cy="21" r="1"></circle>
+            <circle cx="20" cy="21" r="1"></circle>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main">
+    <div class="container">
+      <!-- Mensagem de erro -->
+      <div id="erro-produto" class="erro-produto" style="display: none;">
+        <h1>Produto não encontrado</h1>
+        <p>Desculpe, o produto que você procura não existe.</p>
+        <a href="index.html" class="btn-primary">Voltar para início</a>
+      </div>
+
+      <!-- Página de produto -->
+      <div id="conteudo-produto" class="produto-page">
+        <div class="produto-grid">
+          <!-- Galeria de imagens -->
+          <div class="galeria-container">
+            <div class="imagem-principal">
+              <img id="img-principal" src="" alt="Imagem principal do produto" />
+            </div>
+            <div class="miniaturas">
+              <div id="miniaturas-container" class="miniaturas-grid"></div>
+            </div>
+          </div>
+
+          <!-- Detalhes do produto -->
+          <div class="produto-detalhes">
+            <h1 id="produto-nome" class="produto-nome"></h1>
+            <p id="produto-descricao" class="produto-descricao"></p>
+
+            <div class="produto-preco">
+              <span class="preco">R$ <span id="preco-valor">0,00</span></span>
+            </div>
+
+            <div class="status-estoque">
+              <span id="status-badge" class="badge badge-estoque"></span>
+            </div>
+
+            <!-- Seleção de tamanho -->
+            <div class="tamanhos-section">
+              <label class="tamanhos-label">Tamanho</label>
+              <div id="tamanhos-container" class="tamanhos-grid"></div>
+              <p id="tamanho-erro" class="tamanho-erro" style="display: none;">Selecione um tamanho</p>
+            </div>
+
+            <!-- Personalização -->
+            <div class="personalizacao-section">
+              <div class="personalizacao-header">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="customize-checkbox" />
+                  Personalizar camisa
+                </label>
+              </div>
+
+              <div id="personalizacao-fields" class="personalizacao-fields hidden">
+                <div class="personalizacao-group">
+                  <label for="custom-nome">Nome</label>
+                  <input 
+                    type="text" 
+                    id="custom-nome" 
+                    class="custom-input" 
+                    placeholder="Digite o nome" 
+                    maxlength="20"
+                  />
+                </div>
+
+                <div class="personalizacao-group">
+                  <label for="custom-numero">Número</label>
+                  <input 
+                    type="text" 
+                    id="custom-numero" 
+                    class="custom-input" 
+                    placeholder="Digite o número" 
+                    maxlength="3"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Botão comprar -->
+            <button id="btn-comprar" class="btn-comprar btn-primary">
+              Adicionar ao Carrinho
+            </button>
+
+            <!-- Link voltar -->
+            <a href="index.html" class="btn-voltar-link">← Voltar à loja</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast para notificações -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ============ DRAWER DO CARRINHO ============ -->
+  <div id="drawer-overlay" class="drawer-overlay"></div>
+  <aside id="carrinho" class="cart-drawer" aria-hidden="true">
+    <div class="cart-header">
+      <h2>Seu Carrinho</h2>
+      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <div id="lista-carrinho" class="cart-items-list"></div>
+
+    <div class="cart-empty-state" id="cart-empty-state">
+      <p>Seu carrinho está vazio</p>
+      <p class="text-muted">Selecione uma camisa para começar</p>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-summary">
+        <span id="cart-summary-text">Nenhum item no carrinho</span>
+      </div>
+      <div class="cart-total">
+        <div class="total-label">Total</div>
+        <strong id="total-pedido" class="total-amount">R$ 0,00</strong>
+      </div>
+      <button id="finalizar" class="btn-primary btn-full" type="button">Finalizar no WhatsApp</button>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="produtos-db.js"></script>
+  <script src="produto.js"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@ const produtos = [
     nome: 'Camisa do Brasil I 26/27',
     preco: 199.9,
     prazo: 'Entrega imediata',
-    imagem: 'img/brasil-1-2627.jpg',
+    imagem: 'img/brasil-1-2627-1.jpg',
     destaque: '🔥 Mais vendido',
     estoque: { P: 4, M: 2, G: 0, GG: 1 }
   },
@@ -248,7 +248,20 @@ const elementos = {
   btnFinalizar: document.getElementById('finalizar'),
   btnCloseCart: document.getElementById('close-cart'),
   carrinhoDrawer: document.getElementById('carrinho'),
-  toastContainer: document.getElementById('toast-container')
+  toastContainer: document.getElementById('toast-container'),
+  // Modal elements
+  productModal: document.getElementById('product-modal'),
+  modalTitle: document.getElementById('modal-title'),
+  modalProductImage: document.getElementById('modal-product-image'),
+  modalProductName: document.getElementById('modal-product-name'),
+  modalProductPrice: document.getElementById('modal-product-price'),
+  sizeSelect: document.getElementById('size-select'),
+  customName: document.getElementById('custom-name'),
+  customNumber: document.getElementById('custom-number'),
+  productForm: document.getElementById('product-form'),
+  btnCancelModal: document.getElementById('btn-cancel-modal'),
+  btnConfirmModal: document.getElementById('btn-confirm-modal'),
+  closeModal: document.getElementById('close-modal')
 };
 
 let carrinho = JSON.parse(localStorage.getItem(STORAGE_CART_KEY)) || [];
@@ -354,6 +367,73 @@ function closeCart() {
   document.body.classList.remove('cart-open');
 }
 
+function openProductModal(produto, action = 'buy') {
+  // Preencher dados do produto
+  elementos.modalProductImage.src = produto.imagem;
+  elementos.modalProductImage.alt = produto.nome;
+  elementos.modalProductName.textContent = produto.nome;
+  elementos.modalProductPrice.textContent = formatPrice(produto.preco);
+  elementos.modalTitle.textContent = action === 'buy' ? 'Comprar Produto' : 'Personalizar Produto';
+
+  // Preencher opções de tamanho
+  elementos.sizeSelect.innerHTML = '<option value="">Selecione um tamanho</option>';
+  SIZE_ORDER.forEach(tamanho => {
+    const stock = getSizeStock(produto, tamanho);
+    if (stock > 0) {
+      const option = document.createElement('option');
+      option.value = tamanho;
+      option.textContent = `${tamanho} (${stock} disponível${stock === 1 ? '' : 'is'})`;
+      elementos.sizeSelect.appendChild(option);
+    }
+  });
+
+  // Limpar campos de personalização
+  elementos.customName.value = '';
+  elementos.customNumber.value = '';
+
+  // Armazenar dados do produto e ação no formulário
+  elementos.productForm.dataset.productId = produto.id;
+  elementos.productForm.dataset.action = action;
+
+  // Abrir modal
+  elementos.productModal.classList.add('visible');
+  document.body.classList.add('modal-open');
+}
+
+function closeProductModal() {
+  elementos.productModal.classList.remove('visible');
+  document.body.classList.remove('modal-open');
+  elementos.productForm.reset();
+}
+
+function handleProductFormSubmit(event) {
+  event.preventDefault();
+  
+  const productId = elementos.productForm.dataset.productId;
+  const action = elementos.productForm.dataset.action;
+  const tamanho = elementos.sizeSelect.value;
+  const nome = elementos.customName.value.trim();
+  const numero = elementos.customNumber.value.trim();
+
+  // Validação: tamanho obrigatório para "Comprar"
+  if (action === 'buy' && !tamanho) {
+    showToast('Selecione um tamanho antes de continuar', 'error');
+    return;
+  }
+
+  // Se não selecionou tamanho, usar o primeiro disponível
+  const tamanhoFinal = tamanho || SIZE_ORDER.find(t => getSizeStock(produtos.find(p => p.id === productId), t));
+
+  const personalizacao = {
+    ativa: !!(nome || numero),
+    nome: nome,
+    numero: numero
+  };
+
+  adicionarAoCarrinho(productId, tamanhoFinal, personalizacao);
+  closeProductModal();
+}
+
 function animateAddButton(id) {
   const button = document.querySelector(`.add-button[data-add='${id}']`);
   if (!button) return;
@@ -376,23 +456,20 @@ function atualizarResumoDoCarrinho() {
 
 function initializeImageGallery(card, imagemBase, produtoId) {
   const imageWrap = card.querySelector('.image-wrap');
+  const productImageWrapper = card.querySelector('.product-image-wrapper');
   
-  // Armazena o índice da imagem atual (começa em 1)
   let currentImageIndex = 1;
   let maxImageVariations = 1;
   
-  // Função para extrair o caminho base sem números
   const getImageBasePath = (imagePath) => {
     return imagePath.replace(/-\d+(\.\w+)$/, '$1');
   };
   
-  // Função para construir novo caminho com índice
   const buildImagePath = (basePath, index) => {
     if (index === 1) return basePath;
     return basePath.replace(/(\.\w+)$/, `-${index}$1`);
   };
   
-  // Função para verificar se a imagem existe
   const checkImageExists = (imagePath) => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -402,12 +479,10 @@ function initializeImageGallery(card, imagemBase, produtoId) {
     });
   };
   
-  // Função para detectar quantas variações de imagem existem
   const detectMaxVariations = async () => {
     const baseImagePath = getImageBasePath(imagemBase);
     let max = 1;
     
-    // Verifica até 5 variações
     for (let i = 2; i <= 5; i++) {
       const testPath = buildImagePath(baseImagePath, i);
       const exists = await checkImageExists(testPath);
@@ -421,26 +496,20 @@ function initializeImageGallery(card, imagemBase, produtoId) {
     return max;
   };
   
-  // Função para tentar mudar de imagem
   const changeImage = async (direction) => {
     const baseImagePath = getImageBasePath(imagemBase);
     
-    // Se é a primeira vez, detecta as variações disponíveis
     if (maxImageVariations === 1 && currentImageIndex === 1) {
       maxImageVariations = await detectMaxVariations();
-      
-      // Se só tem uma imagem, não mostra os botões
       if (maxImageVariations === 1) {
         return;
       }
     }
     
-    // Se não tem mais de uma imagem, não faz nada
     if (maxImageVariations <= 1) {
       return;
     }
     
-    // Calcula o novo índice
     let newImageIndex;
     if (direction === 'next') {
       newImageIndex = currentImageIndex >= maxImageVariations ? 1 : currentImageIndex + 1;
@@ -450,45 +519,47 @@ function initializeImageGallery(card, imagemBase, produtoId) {
     
     const newImagePath = buildImagePath(baseImagePath, newImageIndex);
     
-    // Tenta carregar a nova imagem
     try {
       const exists = await checkImageExists(newImagePath);
-      
       if (exists) {
         imgElement.src = newImagePath;
         currentImageIndex = newImageIndex;
-      } else {
-        // Se a imagem não existe, mantém a imagem atual
-        console.warn(`Imagem não encontrada: ${newImagePath}`);
       }
     } catch (error) {
       console.error(`Erro ao carregar imagem: ${error}`);
     }
   };
   
-  // Cria o HTML da galeria com botões de navegação
   imageWrap.innerHTML = `
-    <button type="button" class="image-nav image-nav-prev" data-product-id="${produtoId}" title="Imagem anterior" style="display: none;">❮</button>
-    <img src="${imagemBase}" alt="Imagem do produto" class="product-image" />
-    <button type="button" class="image-nav image-nav-next" data-product-id="${produtoId}" title="Próxima imagem" style="display: none;">❯</button>
+    <button type="button" class="image-nav image-nav-prev" data-product-id="${produtoId}" title="Imagem anterior" style="opacity: 0; transition: opacity 0.3s ease;">❮</button>
+    <img src="${imagemBase}" alt="Imagem do produto" class="product-image" style="width: 100%; height: 100%; object-fit: cover;" />
+    <button type="button" class="image-nav image-nav-next" data-product-id="${produtoId}" title="Próxima imagem" style="opacity: 0; transition: opacity 0.3s ease;">❯</button>
   `;
   
   const prevBtn = imageWrap.querySelector('.image-nav-prev');
   const nextBtn = imageWrap.querySelector('.image-nav-next');
   const imgElement = imageWrap.querySelector('.product-image');
   
-  // Detecta variações ao carregar a galeria
   detectMaxVariations().then((max) => {
     maxImageVariations = max;
+  });
+  
+  // Mostrar botões no hover do wrapper
+  productImageWrapper.addEventListener('mouseenter', async () => {
+    const baseImagePath = getImageBasePath(imagemBase);
+    maxImageVariations = await detectMaxVariations();
     
-    // Mostra os botões só se houver mais de uma imagem
     if (maxImageVariations > 1) {
-      prevBtn.style.display = 'flex';
-      nextBtn.style.display = 'flex';
+      prevBtn.style.opacity = '1';
+      nextBtn.style.opacity = '1';
     }
   });
   
-  // Eventos de clique
+  productImageWrapper.addEventListener('mouseleave', () => {
+    prevBtn.style.opacity = '0';
+    nextBtn.style.opacity = '0';
+  });
+  
   prevBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     changeImage('prev');
@@ -513,21 +584,15 @@ function renderProdutos(listaProdutos = filterProdutos()) {
     const inStock = totalEstoque > 0;
     const precoFormatado = formatPrice(produto.preco);
     
-    // Definir badge baseado em destaque
+    // Definir badge baseado em estoque
     let badgeClass = '';
     let badgeText = '';
-    if (produto.destaque === '🔥 Mais vendido') {
-      badgeClass = 'badge-bestseller';
-      badgeText = 'Mais vendido';
-    } else if (produto.destaque === 'Pré-venda exclusiva') {
-      badgeClass = 'badge-new';
-      badgeText = 'Lançamento';
-    } else if (produto.destaque === 'Últimas unidades') {
-      badgeClass = 'badge-discount';
-      badgeText = 'Últimas unidades';
-    } else {
-      badgeClass = 'badge-new';
+    if (totalEstoque > 0) {
+      badgeClass = 'badge-stock';
       badgeText = 'Em estoque';
+    } else {
+      badgeClass = 'badge-preorder';
+      badgeText = 'Sob encomenda';
     }
 
     const card = document.createElement('article');
@@ -535,36 +600,27 @@ function renderProdutos(listaProdutos = filterProdutos()) {
     card.innerHTML = `
       <div class="product-image-wrapper">
         ${badgeText ? `<span class="product-badge ${badgeClass}">${badgeText}</span>` : ''}
-        <img src="${produto.imagem}" alt="${produto.nome}" class="product-image" />
+        <div class="image-wrap" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+          <img src="${produto.imagem}" alt="${produto.nome}" class="product-image" />
+        </div>
       </div>
       <div class="product-content">
         <div class="product-brand">Seleção ${new Date().getFullYear()}</div>
         <h3 class="product-name">${produto.nome}</h3>
-        <p class="product-description">${produto.prazo}</p>
+        <p class="product-description">Versão torcedor com tecido leve e respirável</p>
         <div class="product-pricing">
           <span class="price-current">${precoFormatado}</span>
         </div>
         <div class="product-actions">
-          <button type="button" class="btn-personalize" data-personalize="${produto.id}">Personalizar</button>
-          <button type="button" class="btn-buy" data-buy="${produto.id}">Comprar</button>
+          <a href="produto.html?id=${produto.id}" class="btn-personalize">Ver Produto</a>
         </div>
       </div>
     `;
 
     elementos.produtos.appendChild(card);
 
-    // Event listener para comprar
-    const btnComprar = card.querySelector(`.btn-buy`);
-    btnComprar.addEventListener('click', () => {
-      adicionarAoCarrinho(produto.id);
-    });
-
-    // Event listener para personalizar
-    const btnPersonalizar = card.querySelector(`.btn-personalize`);
-    btnPersonalizar.addEventListener('click', () => {
-      openCart();
-      showToast('Personalize seu produto no carrinho', 'info');
-    });
+    // Inicializar galeria de imagens
+    initializeImageGallery(card, produto.imagem, produto.id);
   });
 }
 
@@ -584,6 +640,7 @@ function renderOfferCarousel() {
         <div class="offer-price"><span>${formatPrice(oferta.price)}</span></div>
         <div class="offer-extra">${oferta.extra}</div>
         <div class="offer-desc">${oferta.description}</div>
+        <button type="button" class="btn-primary offer-cta">Ver ofertas</button>
       </div>
       <img class="offer-image" src="${oferta.image}" alt="${oferta.title}" />
     `;
@@ -636,21 +693,23 @@ function initOfferCarousel() {
   startAutoSlide();
 }
 
-function adicionarAoCarrinho(id) {
+function adicionarAoCarrinho(id, tamanho = null, personalizacao = { ativa: false, nome: '', numero: '' }) {
   const produto = produtos.find(item => item.id === id);
   if (!produto) return;
 
-  // Pegar tamanho padrão (primeiro tamanho disponível ou 'M')
-  const tamanhoDisponivel = SIZE_ORDER.find(t => getSizeStock(produto, t) > 0) || 'M';
-  const quantidade = 1;
+  // Se tamanho não foi fornecido, usar o primeiro disponível
+  if (!tamanho) {
+    tamanho = SIZE_ORDER.find(t => getSizeStock(produto, t)) || 'M';
+  }
 
-  const tipo = getTipoPorTamanho(produto, tamanhoDisponivel);
+  const quantidade = 1;
+  const tipo = getTipoPorTamanho(produto, tamanho);
   
   // Se em estoque, descontar do estoque
   if (tipo === 'Em estoque') {
-    const stockAvailable = getSizeStock(produto, tamanhoDisponivel);
+    const stockAvailable = getSizeStock(produto, tamanho);
     if (stockAvailable > 0) {
-      produto.estoque[tamanhoDisponivel] -= 1;
+      produto.estoque[tamanho] -= 1;
     }
   }
 
@@ -659,17 +718,14 @@ function adicionarAoCarrinho(id) {
     produtoId: produto.id,
     nome: produto.nome,
     preco: produto.preco,
-    tamanho: tamanhoDisponivel,
+    tamanho: tamanho,
     quantidade: quantidade,
     tipo: tipo,
-    personalizacao: {
-      ativa: false,
-      nome: '',
-      numero: ''
-    }
+    personalizacao: personalizacao
   });
 
   saveCart();
+  renderProdutos();
   renderCarrinho();
   atualizarResumoDoCarrinho();
   showToast('Produto adicionado ao carrinho!', 'success');
@@ -810,9 +866,41 @@ function initEvents() {
   elementos.drawerOverlay.addEventListener('click', closeCart);
   elementos.btnFinalizar.addEventListener('click', finalizarPedido);
 
+  // Modal events
+  elementos.closeModal.addEventListener('click', closeProductModal);
+  elementos.btnCancelModal.addEventListener('click', closeProductModal);
+  elementos.productModal.addEventListener('click', (e) => {
+    if (e.target === elementos.productModal) {
+      closeProductModal();
+    }
+  });
+  elementos.productForm.addEventListener('submit', handleProductFormSubmit);
+
+  // Botão "Comprar agora" no banner
+  const btnComprarAgora = document.querySelector('.hero .btn-primary');
+  if (btnComprarAgora) {
+    btnComprarAgora.addEventListener('click', () => {
+      document.getElementById('lancamentos').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Menu header links
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const targetElement = document.getElementById(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  });
+
   window.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
       closeCart();
+      closeProductModal();
     }
   });
 }
