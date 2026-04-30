@@ -221,7 +221,8 @@ const ofertas = [
     extra: 'Por apenas',
     badge: 'Oferta especial',
     description: 'Camisa com visual premium e preço promocional por tempo limitado.',
-    image: 'img/santos-1-2627.jpg'
+    image: 'img/santos-1-2627.jpg',
+    backgroundImage: 'img/oferta-1.png'
   },
   {
     id: 'combo-camisas',
@@ -231,7 +232,8 @@ const ofertas = [
     extra: 'Só essa semana',
     badge: 'Desconto progressivo',
     description: 'Escolha o kit perfeito para colecionar ou presentear quem ama futebol.',
-    image: 'img/brasil-1-2627.jpg'
+    image: 'img/brasil-1-2627.jpg',
+    backgroundImage: 'img/oferta-2.png'
   }
 ];
 
@@ -642,8 +644,14 @@ function renderOfferCarousel() {
         <div class="offer-desc">${oferta.description}</div>
         <button type="button" class="btn-primary offer-cta">Ver ofertas</button>
       </div>
-      <img class="offer-image" src="${oferta.image}" alt="${oferta.title}" />
     `;
+
+    if (oferta.backgroundImage) {
+      card.style.backgroundImage = `url(${oferta.backgroundImage})`;
+      card.style.backgroundSize = 'cover';
+      card.style.backgroundPosition = 'center';
+      card.style.backgroundRepeat = 'no-repeat';
+    }
 
     track.appendChild(card);
   });

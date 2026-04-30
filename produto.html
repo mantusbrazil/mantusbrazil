@@ -12,7 +12,8 @@
   <nav class="navbar">
     <div class="navbar-container">
       <div class="navbar-logo">
-        <a href="index.html"><span class="logo-main">MANTUSBRAZIL</span></a>
+        <a href="index.html"><span class="logo-main">MANTUS</span>
+        <span class="logo-sub">BRAZIL</span></a>
       </div>
 
       <ul class="navbar-menu">
@@ -50,11 +51,11 @@
         <div class="produto-grid">
           <!-- Galeria de imagens -->
           <div class="galeria-container">
-            <div class="imagem-principal">
-              <img id="img-principal" src="" alt="Imagem principal do produto" />
-            </div>
             <div class="miniaturas">
               <div id="miniaturas-container" class="miniaturas-grid"></div>
+            </div>
+            <div class="imagem-principal">
+              <img id="img-principal" src="" alt="Imagem principal do produto" />
             </div>
           </div>
 
@@ -116,14 +117,57 @@
             <button id="btn-comprar" class="btn-comprar btn-primary">
               Adicionar ao Carrinho
             </button>
-
-            <!-- Link voltar -->
-            <a href="index.html" class="btn-voltar-link">← Voltar à loja</a>
           </div>
+        </div>
+
+        <div class="produto-extra-sections">
+          <section class="secao-card detalhes-produto-secao">
+            <h2 class="secao-titulo">Detalhes do produto</h2>
+            <div id="detalhes-grid" class="detalhes-grid"></div>
+          </section>
+
+          <section class="secao-card tabela-medidas-secao">
+            <h2 class="secao-titulo">Tabela de medidas</h2>
+            <div class="tabela-wrapper">
+              <table class="medidas-tabela">
+                <thead>
+                  <tr>
+                    <th>Tamanho</th>
+                    <th>Largura</th>
+                    <th>Altura</th>
+                  </tr>
+                </thead>
+                <tbody id="tabela-medidas-body"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="secao-card descricao-produto-secao">
+            <h2 class="secao-titulo">Descrição</h2>
+            <p id="descricao-completa" class="descricao-completa"></p>
+          </section>
+
+          <section class="secao-card caracteristicas-secao">
+            <h2 class="secao-titulo">Características</h2>
+            <div id="caracteristicas-grid" class="caracteristicas-grid"></div>
+          </section>
         </div>
       </div>
     </div>
   </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <div class="footer-logo"><span class="logo-main">MANTUS</span><span class="logo-sub">BRAZIL</span></div>
+        <p>Camisas oficiais com acabamento premium e atendimento ágil para todo o Brasil.</p>
+      </div>
+      <div class="footer-meta">
+        <span>WhatsApp de suporte</span>
+        <span>Entrega rápida</span>
+      </div>
+    </div>
+  </footer>
 
   <!-- Toast para notificações -->
   <div id="toast-container" class="toast-container"></div>

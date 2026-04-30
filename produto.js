@@ -15,6 +15,10 @@ const elementos = {
   precoValor: document.getElementById('preco-valor'),
   statusBadge: document.getElementById('status-badge'),
   tamanhosContainer: document.getElementById('tamanhos-container'),
+  detalhesGrid: document.getElementById('detalhes-grid'),
+  tabelaMedidasBody: document.getElementById('tabela-medidas-body'),
+  descricaoCompleta: document.getElementById('descricao-completa'),
+  caracteristicasGrid: document.getElementById('caracteristicas-grid'),
   tamanhoErro: document.getElementById('tamanho-erro'),
   customNome: document.getElementById('custom-nome'),
   customNumero: document.getElementById('custom-numero'),
@@ -68,6 +72,27 @@ function showToast(message, type = 'success') {
   }, 3300);
 }
 
+function extrairClube(nome) {
+  const match = nome.match(/Camisa (?:do|da|de) ([A-Za-zÀ-ú ]+?)\s+(?:I|II)\b/);
+  if (match) return match[1].trim();
+  const fallback = nome.replace(/Camisa\s+(?:do|da|de)\s+/i, '').replace(/\s+I{1,2}\s+26\/27/i, '').trim();
+  return fallback || 'Brasil';
+}
+
+function enriquecerProduto(produto) {
+  return {
+    ...produto,
+    marca: produto.marca || 'Nike',
+    clube: produto.clube || extrairClube(produto.nome),
+    tipo: produto.tipo || 'Torcedor',
+    temporada: produto.temporada || '26/27',
+    material: produto.material || 'Poliéster leve',
+    cor: produto.cor || 'Amarelo',
+    escudo: produto.escudo || 'Bordado',
+    origem: produto.origem || 'Importado'
+  };
+}
+
 // ============================================
 // CARREGAR PRODUTO
 // ============================================
@@ -90,7 +115,7 @@ function carregarProduto() {
     return;
   }
 
-  produtoAtual = produto;
+  produtoAtual = enriquecerProduto(produto);
   preencherPagina();
 }
 
@@ -121,6 +146,58 @@ function preencherPagina() {
 
   // Tamanhos
   criarBotoesTamanho();
+
+  // Seções extras
+  gerarDetalhesDoProduto();
+  gerarTabelaMedidas();
+  gerarDescricaoCompleta();
+  gerarCaracteristicas();
+}
+
+function gerarDetalhesDoProduto() {
+  const produto = produtoAtual;
+  const detalhes = [
+    { label: 'Marca', valor: produto.marca },
+    { label: 'Clube/Seleção', valor: produto.clube },
+    { label: 'Tipo', valor: produto.tipo },
+    { label: 'Temporada', valor: produto.temporada },
+    { label: 'Material', valor: produto.material },
+    { label: 'Cor principal', valor: produto.cor },
+    { label: 'Escudo', valor: produto.escudo },
+    { label: 'Origem', valor: produto.origem }
+  ];
+
+  elementos.detalhesGrid.innerHTML = detalhes.map(item => `
+    <div class="detalhes-item">
+      <span class="detalhes-label">${item.label}</span>
+      <span class="detalhes-valor">${item.valor}</span>
+    </div>
+  `).join('');
+}
+
+function gerarTabelaMedidas() {
+  elementos.tabelaMedidasBody.innerHTML = `
+    <tr><td>P</td><td>50cm</td><td>70cm</td></tr>
+    <tr><td>M</td><td>52cm</td><td>72cm</td></tr>
+    <tr><td>G</td><td>54cm</td><td>74cm</td></tr>
+    <tr><td>GG</td><td>56cm</td><td>76cm</td></tr>
+  `;
+}
+
+function gerarDescricaoCompleta() {
+  const produto = produtoAtual;
+  const descricaoBase = produto.descricao ? produto.descricao.replace(/\.*$/, '') : '';
+  elementos.descricaoCompleta.textContent = `${descricaoBase}. A camisa ${produto.clube} ${produto.temporada} versão ${produto.tipo.toLowerCase()} combina conforto e estilo com tecido ${produto.material.toLowerCase()}, alta respirabilidade e acabamento premium para uso casual ou jogos.`;
+}
+
+function gerarCaracteristicas() {
+  const itens = ['Tecido leve', 'Alta respirabilidade', 'Escudo premium', 'Ideal para uso casual'];
+  elementos.caracteristicasGrid.innerHTML = itens.map(item => `
+    <div class="caracteristica-item">
+      <span class="caracteristica-icone">✓</span>
+      <span>${item}</span>
+    </div>
+  `).join('');
 }
 
 function getSizeStock(tamanho) {
@@ -149,13 +226,16 @@ function atualizarStatusBadge() {
 
 function criarGaleria() {
   const produto = produtoAtual;
-  const imagens = produto.imagens || [produto.imagem];
+  const placeholder = 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000"><rect width="100%25" height="100%25" fill="%23ffffff"/></svg>';
+  const imagens = Array.isArray(produto.imagens) && produto.imagens.length > 0
+    ? produto.imagens
+    : produto.imagem
+      ? [produto.imagem]
+      : [placeholder];
 
   // Imagem principal
-  if (imagens.length > 0) {
-    elementos.imgPrincipal.src = imagens[0];
-    elementos.imgPrincipal.alt = produto.nome;
-  }
+  elementos.imgPrincipal.src = imagens[0];
+  elementos.imgPrincipal.alt = produto.nome;
 
   // Miniaturas
   elementos.miniaturaContainer.innerHTML = '';
