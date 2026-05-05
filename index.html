@@ -32,7 +32,7 @@
             <path d="m21 21-4.35-4.35"></path>
           </svg>
         </div>
-        <button id="btn-ver-carrinho" class="btn-cart" type="button" aria-label="Abrir carrinho">
+        <button id="btn-ver-carrinho" class="btn-cart" type="button" aria-label="Abrir carrinho" onclick="openCart()">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
@@ -74,15 +74,55 @@
             <h2 class="section-title">Produtos em Destaque</h2>
             <p class="section-subtitle">Camisas oficiais dos principais times do mundo</p>
           </div>
-          <a href="#lancamentos" class="link-primary">Ver todos</a>
-        </div>
+          <div>
+            <a href="#lancamentos" class="link-primary">Ver todos</a>
+          <div class="products-filter">
+            <div class="filter-dropdown">
+              <button id="filter-btn" class="filter-btn" aria-label="Abrir filtros" aria-expanded="false">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="4" y1="6" x2="20" y2="6"></line>
+                  <line x1="4" y1="12" x2="20" y2="12"></line>
+                  <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>
+                Filtros
+              </button>
+              <div id="filter-menu" class="filter-menu" role="menu" aria-hidden="true">
+                <div class="filter-group">
+                  <h3 class="filter-group-title">Disponibilidade</h3>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-all" value="all" checked>
+                    <span>Todos</span>
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-instock" value="instock">
+                    <span>Em estoque</span>
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-preorder" value="preorder">
+                    <span>Sob encomenda</span>
+                  </label>
+                </div>
 
-        <div class="products-filter">
-          <select id="product-filter" class="filter-select" aria-label="Filtrar por disponibilidade">
-            <option value="all">Todos</option>
-            <option value="instock">Em estoque</option>
-            <option value="preorder">Sob encomenda</option>
-          </select>
+                <div class="filter-group">
+                  <h3 class="filter-group-title">Tipo de Time</h3>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-cat-all" value="all" checked>
+                    <span>Todas as coleções</span>
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-cat-selecoes" value="selecoes">
+                    <span>Seleções</span>
+                  </label>
+                  <label class="filter-checkbox">
+                    <input type="checkbox" id="filter-cat-clubes" value="clubes">
+                    <span>Clubes</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
         </div>
 
         <div id="produtos" class="products-grid"></div>
@@ -100,21 +140,42 @@
             <div class="team-logo">BR</div>
             <div>
               <h3>Brasil</h3>
-              <p>Camisas 26/27 com garantia de qualidade.</p>
+              <p>Camisas oficiais e design autêntico.</p>
+            </div>
+          </article>
+          <article class="team-card">
+            <div class="team-logo">AR</div>
+            <div>
+              <h3>Argentina</h3>
+              <p>Uniformes clássicos com qualidade premium.</p>
             </div>
           </article>
           <article class="team-card">
             <div class="team-logo">RM</div>
             <div>
               <h3>Real Madrid</h3>
-              <p>Modelos exclusivos com acabamento premium.</p>
+              <p>Edições limitadas para colecionadores.</p>
             </div>
           </article>
           <article class="team-card">
             <div class="team-logo">PS</div>
             <div>
               <h3>PSG</h3>
-              <p>Visual moderno e estampas oficiais.</p>
+              <p>Estilo moderno e acabamento sofisticado.</p>
+            </div>
+          </article>
+          <article class="team-card">
+            <div class="team-logo">SC</div>
+            <div>
+              <h3>Santos</h3>
+              <p>Oferta especial para fãs do Peixe.</p>
+            </div>
+          </article>
+          <article class="team-card">
+            <div class="team-logo">FC</div>
+            <div>
+              <h3>Corinthians</h3>
+              <p>Tradição, resistência e identidade de clube.</p>
             </div>
           </article>
         </div>
@@ -128,7 +189,8 @@
           </div>
         </div>
         <div class="customize-text">
-          <p>Na MantusBrazil, toda camisa personalizada é confeccionada sob encomenda. Escolha o produto, marque a opção de personalização na página de produto e informe o nome e número desejados.</p>
+          <p>Na MantusBrazil, toda camisa personalizada é confeccionada sob encomenda. Escolha o produto, marque a opção
+            de personalização na página de produto e informe o nome e número desejados.</p>
         </div>
       </section>
     </div>
@@ -138,11 +200,22 @@
     <div class="container footer-content">
       <div class="footer-brand">
         <div class="footer-logo"><span class="logo-main">MANTUS</span><span class="logo-sub">BRAZIL</span></div>
-        <p>Camisas oficiais com acabamento premium e atendimento ágil para todo o Brasil.</p>
+        <p>Camisas oficiais com acabamento premium, entrega rápida e suporte dedicado para todo o Brasil.</p>
       </div>
-      <div class="footer-meta">
-        <span>WhatsApp de suporte</span>
-        <span>Entrega rápida</span>
+      <div class="footer-links">
+        <div>
+          <h3>Atendimento</h3>
+          <p>WhatsApp: <a href="https://wa.me/5513991827915" target="_blank" rel="noreferrer">+55 13 99182-7915</a></p>
+          <p>Instagram: <a href="https://www.instagram.com/mantusbrazil" target="_blank" rel="noreferrer">@mantusbrazil</a></p>
+        </div>
+        <div>
+          <h3>Links rápidos</h3>
+          <ul class="footer-menu">
+            <li><a href="#lancamentos">Lançamentos</a></li>
+            <li><a href="#times">Times</a></li>
+            <li><a href="#promocoes">Promoções</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   </footer>
@@ -153,15 +226,13 @@
   <aside id="carrinho" class="cart-drawer" aria-hidden="true">
     <div class="cart-header">
       <h2>Seu Carrinho</h2>
-      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho" onclick="closeCart()">
+        ×
       </button>
     </div>
 
     <div id="lista-carrinho" class="cart-items-list"></div>
+
 
     <div class="cart-empty-state" id="cart-empty-state">
       <p>Seu carrinho está vazio</p>
@@ -169,9 +240,16 @@
     </div>
 
     <div class="cart-footer">
-      <div class="cart-summary">
-        <span id="cart-summary-text">Nenhum item no carrinho</span>
+
+      <div class="cart-coupon">
+        <label for="coupon-code">Cupom de desconto</label>
+        <div class="coupon-actions">
+          <input id="coupon-code" type="text" placeholder="Digite seu cupom" />
+          <button id="apply-coupon" class="btn-secondary" type="button">Aplicar</button>
+        </div>
+        <p id="coupon-message" class="coupon-message"></p>
       </div>
+
       <div class="cart-total">
         <div class="total-label">Total</div>
         <strong id="total-pedido" class="total-amount">R$ 0,00</strong>

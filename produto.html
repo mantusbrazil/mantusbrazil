@@ -31,6 +31,7 @@
             <circle cx="20" cy="21" r="1"></circle>
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
           </svg>
+          <span id="badge-total-itens" class="cart-badge">0</span>
         </button>
       </div>
     </div>
@@ -64,8 +65,13 @@
             <h1 id="produto-nome" class="produto-nome"></h1>
             <p id="produto-descricao" class="produto-descricao"></p>
 
+            <div class="produto-meta">
+              <span class="info-pill">Envio em 24h</span>
+              <span class="info-pill">Qualidade oficial</span>
+            </div>
+
             <div class="produto-preco">
-              <span class="preco">R$ <span id="preco-valor">0,00</span></span>
+              <span class="preco"><span id="preco-valor">0,00</span></span>
             </div>
 
             <div class="status-estoque">
@@ -160,11 +166,22 @@
     <div class="container footer-content">
       <div class="footer-brand">
         <div class="footer-logo"><span class="logo-main">MANTUS</span><span class="logo-sub">BRAZIL</span></div>
-        <p>Camisas oficiais com acabamento premium e atendimento ágil para todo o Brasil.</p>
+        <p>Camisas oficiais com acabamento premium, entrega rápida e suporte dedicado para todo o Brasil.</p>
       </div>
-      <div class="footer-meta">
-        <span>WhatsApp de suporte</span>
-        <span>Entrega rápida</span>
+      <div class="footer-links">
+        <div>
+          <h3>Atendimento</h3>
+          <p>WhatsApp: <a href="https://wa.me/5513991827915" target="_blank" rel="noreferrer">+55 13 99182-7915</a></p>
+          <p>Instagram: <a href="https://www.instagram.com/mantusbrazil" target="_blank" rel="noreferrer">@mantusbrazil</a></p>
+        </div>
+        <div>
+          <h3>Ajuda</h3>
+          <ul class="footer-menu">
+            <li><a href="index.html#lancamentos">Lançamentos</a></li>
+            <li><a href="index.html#times">Times</a></li>
+            <li><a href="index.html#promocoes">Promoções</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   </footer>
@@ -177,11 +194,8 @@
   <aside id="carrinho" class="cart-drawer" aria-hidden="true">
     <div class="cart-header">
       <h2>Seu Carrinho</h2>
-      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
+      <button id="close-cart" class="btn-close" aria-label="Fechar carrinho" onclick="closeCart()">
+        ×
       </button>
     </div>
 
@@ -193,9 +207,14 @@
     </div>
 
     <div class="cart-footer">
-      <div class="cart-summary">
-        <span id="cart-summary-text">Nenhum item no carrinho</span>
+      <div class="cart-coupon">
+      <label for="coupon-code">Cupom de desconto</label>
+      <div class="coupon-actions">
+        <input id="coupon-code" type="text" placeholder="Digite seu cupom" />
+        <button id="apply-coupon" class="btn-secondary" type="button">Aplicar</button>
       </div>
+      <p id="coupon-message" class="coupon-message"></p>
+    </div>
       <div class="cart-total">
         <div class="total-label">Total</div>
         <strong id="total-pedido" class="total-amount">R$ 0,00</strong>

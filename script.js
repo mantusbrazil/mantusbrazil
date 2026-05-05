@@ -1,6 +1,13 @@
 ﻿const STORAGE_CART_KEY = 'carrinho_camisas_venda';
 const STORAGE_STOCK_KEY = 'estoque_camisas_venda';
+const STORAGE_COUPON_KEY = 'carrinho_cupom_venda';
 const SIZE_ORDER = ['P', 'M', 'G', 'GG'];
+
+const cupons = {
+  "mantus10": 0.10
+};
+
+let activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || '';
 
 const produtos = [
   {
@@ -217,6 +224,7 @@ const ofertas = [
     id: 'mantus-santos',
     title: 'Mantus do Santos',
     subtitle: 'Compre duas e ganhe 10% de desconto',
+    coupon: 'mantusdosantos',
     price: 269.9,
     extra: 'Por apenas',
     badge: 'Oferta especial',
@@ -228,6 +236,7 @@ const ofertas = [
     id: 'combo-camisas',
     title: 'Combo de Camisas',
     subtitle: 'Leve 2 camisas e pague menos',
+    coupon: 'mantuscombo',
     price: 399.9,
     extra: 'Só essa semana',
     badge: 'Desconto progressivo',
@@ -240,7 +249,8 @@ const ofertas = [
 const elementos = {
   produtos: document.getElementById('produtos'),
   productSearch: document.getElementById('product-search'),
-  productFilter: document.getElementById('product-filter'),
+  filterBtn: document.getElementById('filter-btn'),
+  filterMenu: document.getElementById('filter-menu'),
   listaCarrinho: document.getElementById('lista-carrinho'),
   totalPedido: document.getElementById('total-pedido'),
   badgeTotalItens: document.getElementById('badge-total-itens'),
@@ -250,6 +260,9 @@ const elementos = {
   btnFinalizar: document.getElementById('finalizar'),
   btnCloseCart: document.getElementById('close-cart'),
   carrinhoDrawer: document.getElementById('carrinho'),
+  couponInput: document.getElementById('coupon-code'),
+  btnApplyCoupon: document.getElementById('apply-coupon'),
+  couponMessage: document.getElementById('coupon-message'),
   toastContainer: document.getElementById('toast-container'),
   // Modal elements
   productModal: document.getElementById('product-modal'),
@@ -284,8 +297,8 @@ function isProductPreorder(produto) {
   return getTotalStock(produto.estoque) === 0;
 }
 
-function getProductTypeForSelection(produto, tamanho) {
-  return getTipoPorTamanho(produto, tamanho);
+function calcularTotal(carrinho) {
+  return carrinho.reduce((sum, item) => sum + item.preco * item.quantidade, 0);
 }
 
 function getTipoPorTamanho(produto, tamanho) {
@@ -297,20 +310,43 @@ function getBadgeType(produto) {
   return isProductPreorder(produto) ? 'badge-preorder' : 'badge-stock';
 }
 
+function isSelecaoProduto(produto) {
+  return /\b(Brasil|Argentina|Espanha|Inglaterra|França|Colômbia|Holanda|Itália|Portug(al)?|Estados Unidos)\b/i.test(produto.nome);
+}
+
+function getProductCategoryLabel(produto) {
+  return isSelecaoProduto(produto) ? 'Seleção' : 'Clube';
+}
+
+function getCheckboxValues(ids) {
+  const selected = Array.from(document.querySelectorAll(ids.join(',')))
+    .filter(checkbox => checkbox.checked)
+    .map(checkbox => checkbox.value);
+  return selected.length ? selected : ['all'];
+}
+
 function filterProdutos() {
   const termo = elementos.productSearch.value.trim().toLowerCase();
-  const filtro = elementos.productFilter.value;
+  const selectedAvailability = getCheckboxValues(['#filter-all', '#filter-instock', '#filter-preorder']);
+  const selectedCategories = getCheckboxValues(['#filter-cat-all', '#filter-cat-selecoes', '#filter-cat-clubes']);
 
   return produtos.filter(produto => {
     const nomeMatch = produto.nome.toLowerCase().includes(termo);
     if (!nomeMatch) return false;
 
-    if (filtro === 'instock') {
-      return getTotalStock(produto.estoque) > 0;
+    const productStock = getTotalStock(produto.estoque);
+    const isInStock = productStock > 0;
+    const productCategory = isSelecaoProduto(produto) ? 'selecoes' : 'clubes';
+
+    if (!selectedAvailability.includes('all')) {
+      if (selectedAvailability.includes('instock') && !isInStock) return false;
+      if (selectedAvailability.includes('preorder') && isInStock) return false;
+      if (!selectedAvailability.some(value => value === 'instock' || value === 'preorder')) return false;
     }
 
-    if (filtro === 'preorder') {
-      return getTotalStock(produto.estoque) === 0;
+    if (!selectedCategories.includes('all')) {
+      if (selectedCategories.includes('selecoes') && productCategory !== 'selecoes') return false;
+      if (selectedCategories.includes('clubes') && productCategory !== 'clubes') return false;
     }
 
     return true;
@@ -324,6 +360,40 @@ function saveCart() {
     return acc;
   }, {});
   localStorage.setItem(STORAGE_STOCK_KEY, JSON.stringify(stockData));
+  localStorage.setItem(STORAGE_COUPON_KEY, activeCouponCode);
+}
+
+function loadCouponState() {
+  activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || '';
+}
+
+function getCoupon(code) {
+  return cupons[code.toLowerCase()] || null;
+}
+
+function applyCoupon() {
+  if (!elementos.couponInput) return;
+
+  const code = elementos.couponInput.value.trim().toLowerCase();
+
+  if (!code) {
+    activeCouponCode = '';
+    saveCart();
+    renderCarrinho();
+    showToast('Cupom removido.', 'success');
+    return;
+  }
+
+  const desconto = getCoupon(code);
+  if (!desconto) {
+    showToast('Cupom inválido.', 'error');
+    return;
+  }
+
+  activeCouponCode = code;
+  saveCart();
+  renderCarrinho();
+  showToast(`Cupom "${code}" aplicado!`, 'success');
 }
 
 function loadStockState() {
@@ -411,20 +481,17 @@ function closeProductModal() {
 function handleProductFormSubmit(event) {
   event.preventDefault();
   
-  const productId = elementos.productForm.dataset.productId;
+  const productId = parseInt(elementos.productForm.dataset.productId, 10);
   const action = elementos.productForm.dataset.action;
   const tamanho = elementos.sizeSelect.value;
   const nome = elementos.customName.value.trim();
   const numero = elementos.customNumber.value.trim();
 
-  // Validação: tamanho obrigatório para "Comprar"
-  if (action === 'buy' && !tamanho) {
-    showToast('Selecione um tamanho antes de continuar', 'error');
+  // Validação: tamanho obrigatório
+  if (!tamanho) {
+    showToast('Selecione um tamanho antes de continuar.', 'error');
     return;
   }
-
-  // Se não selecionou tamanho, usar o primeiro disponível
-  const tamanhoFinal = tamanho || SIZE_ORDER.find(t => getSizeStock(produtos.find(p => p.id === productId), t));
 
   const personalizacao = {
     ativa: !!(nome || numero),
@@ -432,7 +499,7 @@ function handleProductFormSubmit(event) {
     numero: numero
   };
 
-  adicionarAoCarrinho(productId, tamanhoFinal, personalizacao);
+  adicionarAoCarrinho(productId, tamanho, personalizacao);
   closeProductModal();
 }
 
@@ -607,9 +674,8 @@ function renderProdutos(listaProdutos = filterProdutos()) {
         </div>
       </div>
       <div class="product-content">
-        <div class="product-brand">Seleção ${new Date().getFullYear()}</div>
+        <span class="product-category-tag">${getProductCategoryLabel(produto)}</span>
         <h3 class="product-name">${produto.nome}</h3>
-        <p class="product-description">Versão torcedor com tecido leve e respirável</p>
         <div class="product-pricing">
           <span class="price-current">${precoFormatado}</span>
         </div>
@@ -639,6 +705,7 @@ function renderOfferCarousel() {
         <span class="offer-badge">${oferta.badge}</span>
         <h3 class="offer-title">${oferta.title}</h3>
         <div class="offer-subtitle">${oferta.subtitle}</div>
+        ${oferta.coupon ? `<div class="offer-coupon">Cupom: <strong>${oferta.coupon}</strong></div>` : ''}
         <div class="offer-price"><span>${formatPrice(oferta.price)}</span></div>
         <div class="offer-extra">${oferta.extra}</div>
         <div class="offer-desc">${oferta.description}</div>
@@ -705,9 +772,10 @@ function adicionarAoCarrinho(id, tamanho = null, personalizacao = { ativa: false
   const produto = produtos.find(item => item.id === id);
   if (!produto) return;
 
-  // Se tamanho não foi fornecido, usar o primeiro disponível
+  // Bloquear adição sem tamanho
   if (!tamanho) {
-    tamanho = SIZE_ORDER.find(t => getSizeStock(produto, t)) || 'M';
+    showToast('Selecione um tamanho antes de continuar.', 'error');
+    return;
   }
 
   const quantidade = 1;
@@ -723,13 +791,15 @@ function adicionarAoCarrinho(id, tamanho = null, personalizacao = { ativa: false
 
   carrinho.push({
     id: `${id}-${Date.now()}`,
-    produtoId: produto.id,
     nome: produto.nome,
     preco: produto.preco,
+    imagem: produto.imagem,
     tamanho: tamanho,
     quantidade: quantidade,
-    tipo: tipo,
-    personalizacao: personalizacao
+    personalizacao: {
+      nome: personalizacao.nome || null,
+      numero: personalizacao.numero || null
+    }
   });
 
   saveCart();
@@ -740,40 +810,42 @@ function adicionarAoCarrinho(id, tamanho = null, personalizacao = { ativa: false
   openCart();
 }
 
-function atualizarQuantidade(index, quantidade) {
+function alterarQuantidade(index, delta) {
   const item = carrinho[index];
-  const produto = produtos.find(prod => prod.id === item.produtoId);
+  const produto = produtos.find(prod => prod.id === parseInt(item.id.split('-')[0]));
   if (!produto) return;
 
-  const novaQuantidade = Math.max(1, Number(quantidade));
+  const novaQuantidade = Math.max(1, item.quantidade + delta);
 
-  if (item.tipo === 'Em estoque') {
+  if (novaQuantidade === item.quantidade) return; // Não mudou
+
+  // Se for em estoque, verificar limite
+  if (getTipoPorTamanho(produto, item.tamanho) === 'Em estoque') {
     const estoqueAtual = getSizeStock(produto, item.tamanho);
     const maxDisponivel = estoqueAtual + item.quantidade;
 
     if (novaQuantidade > maxDisponivel) {
-      item.quantidade = maxDisponivel;
       showToast(`Máximo permitido: ${maxDisponivel} unidade${maxDisponivel === 1 ? '' : 's'}.`, 'info');
-    } else {
-      produto.estoque[item.tamanho] = estoqueAtual + item.quantidade - novaQuantidade;
-      item.quantidade = novaQuantidade;
+      return;
     }
-  } else {
-    item.quantidade = novaQuantidade;
+    produto.estoque[item.tamanho] = estoqueAtual + item.quantidade - novaQuantidade;
   }
 
-  saveCart();
-  renderProdutos();
-  renderCarrinho();
+  item.quantidade = novaQuantidade;
+
+  if (novaQuantidade <= 0) {
+    removerItem(index);
+  } else {
+    saveCart();
+    renderCarrinho();
+  }
 }
 
 function removerItem(index) {
   const item = carrinho[index];
-  if (item.tipo === 'Em estoque') {
-    const produto = produtos.find(prod => prod.id === item.produtoId);
-    if (produto) {
-      produto.estoque[item.tamanho] += item.quantidade;
-    }
+  const produto = produtos.find(prod => prod.id === parseInt(item.id.split('-')[0]));
+  if (produto && getTipoPorTamanho(produto, item.tamanho) === 'Em estoque') {
+    produto.estoque[item.tamanho] += item.quantidade;
   }
   carrinho.splice(index, 1);
   saveCart();
@@ -783,16 +855,15 @@ function removerItem(index) {
 }
 
 function gerarMensagemWhatsApp() {
-  const total = carrinho.reduce((sum, item) => sum + item.preco * item.quantidade, 0);
+  const total = calcularTotal(carrinho);
   const linhas = ['Olá! Quero fazer um pedido de camisas:', '-----------------------------'];
 
   carrinho.forEach(item => {
     linhas.push(`Produto: ${item.nome}`);
     linhas.push(`Tamanho: ${item.tamanho}`);
     linhas.push(`Quantidade: ${item.quantidade}`);
-    linhas.push(`Tipo: ${item.tipo}`);
-    if (item.personalizacao.ativa) {
-      linhas.push(`Personalização: ${item.personalizacao.nome} #${item.personalizacao.numero}`);
+    if (item.personalizacao && (item.personalizacao.nome || item.personalizacao.numero)) {
+      linhas.push(`Personalização: ${item.personalizacao.nome || ''} ${item.personalizacao.numero ? '#' + item.personalizacao.numero : ''}`);
     }
     linhas.push('-----------------------------');
   });
@@ -802,56 +873,74 @@ function gerarMensagemWhatsApp() {
 }
 
 function renderCarrinho() {
+  carrinho = JSON.parse(localStorage.getItem(STORAGE_CART_KEY)) || [];
+  activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || activeCouponCode;
   elementos.listaCarrinho.innerHTML = '';
 
+  const cartEmptyState = document.getElementById('cart-empty-state');
   if (carrinho.length === 0) {
     elementos.listaCarrinho.innerHTML = '<div class="cart-empty">Seu carrinho está vazio. Adicione uma camisa para começar o pedido.</div>';
+    if (cartEmptyState) cartEmptyState.style.display = 'block';
     elementos.totalPedido.textContent = formatPrice(0);
+    if (elementos.couponInput) elementos.couponInput.value = activeCouponCode;
+    if (elementos.couponMessage) elementos.couponMessage.textContent = '';
     atualizarResumoDoCarrinho();
     return;
   }
+  if (cartEmptyState) cartEmptyState.style.display = 'none';
 
   carrinho.forEach((item, index) => {
-    const produto = produtos.find(prod => prod.id === item.produtoId);
+    const produto = produtos.find(prod => prod.id === parseInt(item.id.split('-')[0]));
     const itemCard = document.createElement('div');
     itemCard.className = 'cart-item';
     itemCard.innerHTML = `
-      <img src="${produto.imagem}" alt="${item.nome}" />
+      <img src="${item.imagem}" alt="${item.nome}" />
       <div class="cart-item-info">
         <strong>${item.nome}</strong>
         <div class="cart-item-meta">
           <span>Tamanho: ${item.tamanho}</span>
-          <span>${item.tipo}</span>
-          ${item.personalizacao.ativa ? `<span>${item.personalizacao.nome} #${item.personalizacao.numero}</span>` : ''}
+          ${item.personalizacao && (item.personalizacao.nome || item.personalizacao.numero) ? `<span>${item.personalizacao.nome || ''} ${item.personalizacao.numero ? '#' + item.personalizacao.numero : ''}</span>` : ''}
         </div>
         <div class="cart-item-actions">
           <div class="quantity-control">
-            <label for="cart-quantidade-${index}">Quantidade</label>
-            <input id="cart-quantidade-${index}" type="number" min="1" value="${item.quantidade}" data-index="${index}" class="quantity-input" />
+            <button type="button" class="quantity-btn" data-action="decrease" data-index="${index}">-</button>
+            <span class="quantity-display">${item.quantidade}</span>
+            <button type="button" class="quantity-btn" data-action="increase" data-index="${index}">+</button>
           </div>
           <button type="button" class="cart-item-remove" data-index="${index}">Remover</button>
         </div>
       </div>
     `;
 
-    const quantityInput = itemCard.querySelector('input[type="number"]');
+    // Botões de quantidade
+    const decreaseBtn = itemCard.querySelector('[data-action="decrease"]');
+    const increaseBtn = itemCard.querySelector('[data-action="increase"]');
     const removeButton = itemCard.querySelector('.cart-item-remove');
 
-    quantityInput.addEventListener('change', event => {
-      const value = Number(event.target.value);
-      if (Number.isNaN(value) || value < 1) {
-        event.target.value = item.quantidade;
-        return;
-      }
-      atualizarQuantidade(index, value);
-    });
-
+    decreaseBtn.addEventListener('click', () => alterarQuantidade(index, -1));
+    increaseBtn.addEventListener('click', () => alterarQuantidade(index, 1));
     removeButton.addEventListener('click', () => removerItem(index));
+
     elementos.listaCarrinho.appendChild(itemCard);
   });
 
-  const total = carrinho.reduce((sum, item) => sum + item.preco * item.quantidade, 0);
-  elementos.totalPedido.textContent = formatPrice(total);
+  const subtotal = calcularTotal(carrinho);
+  let discount = 0;
+  let couponMessage = '';
+
+  if (activeCouponCode) {
+    const desconto = getCoupon(activeCouponCode);
+    if (desconto) {
+      discount = subtotal * desconto;
+      couponMessage = `Cupom ${activeCouponCode} aplicado: ${Math.round(desconto * 100)}% de desconto`;
+    } else {
+      couponMessage = 'Cupom inválido.';
+    }
+  }
+
+  elementos.totalPedido.textContent = formatPrice(subtotal - discount);
+  if (elementos.couponInput) elementos.couponInput.value = activeCouponCode;
+  if (elementos.couponMessage) elementos.couponMessage.textContent = couponMessage;
   atualizarResumoDoCarrinho();
 }
 
@@ -866,13 +955,89 @@ function finalizarPedido() {
   window.open(url, '_blank');
 }
 
+let eventsInitialized = false;
+
 function initEvents() {
+  if (eventsInitialized) return;
+  eventsInitialized = true;
+
+  // Search
   elementos.productSearch.addEventListener('input', () => renderProdutos());
-  elementos.productFilter.addEventListener('change', () => renderProdutos());
-  elementos.btnVerCarrinho.addEventListener('click', openCart);
-  elementos.btnCloseCart.addEventListener('click', closeCart);
-  elementos.drawerOverlay.addEventListener('click', closeCart);
+
+  // Filter dropdown toggle
+  if (elementos.filterBtn && elementos.filterMenu) {
+    elementos.filterBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = elementos.filterMenu.getAttribute('aria-hidden') === 'false';
+      elementos.filterMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+      elementos.filterBtn.setAttribute('aria-expanded', !isOpen);
+    });
+
+    // Close filter menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.filter-dropdown')) {
+        elementos.filterMenu.setAttribute('aria-hidden', 'true');
+        elementos.filterBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Add change listeners to all filter checkboxes
+    const filterCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="filter-"]');
+    filterCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        // Handle availability filter group
+        if (checkbox.id.startsWith('filter-') && !checkbox.id.startsWith('filter-cat-')) {
+          if (checkbox.id === 'filter-all' && checkbox.checked) {
+            document.getElementById('filter-instock').checked = false;
+            document.getElementById('filter-preorder').checked = false;
+          } else if (checkbox.checked && checkbox.id !== 'filter-all') {
+            document.getElementById('filter-all').checked = false;
+          }
+        }
+        // Handle category filter group
+        if (checkbox.id.startsWith('filter-cat-')) {
+          if (checkbox.id === 'filter-cat-all' && checkbox.checked) {
+            document.getElementById('filter-cat-selecoes').checked = false;
+            document.getElementById('filter-cat-clubes').checked = false;
+          } else if (checkbox.checked && checkbox.id !== 'filter-cat-all') {
+            document.getElementById('filter-cat-all').checked = false;
+          }
+        }
+        renderProdutos();
+      });
+    });
+  }
+
+  const cartButtons = [elementos.btnVerCarrinho, document.querySelector('.btn-cart')].filter(Boolean);
+  const uniqueCartButtons = [...new Set(cartButtons)];
+  uniqueCartButtons.forEach(button => button.addEventListener('click', openCart));
+
+  if (elementos.drawerOverlay) {
+    elementos.drawerOverlay.addEventListener('click', closeCart);
+  }
   elementos.btnFinalizar.addEventListener('click', finalizarPedido);
+
+  if (elementos.btnApplyCoupon) {
+    elementos.btnApplyCoupon.addEventListener('click', applyCoupon);
+  }
+
+  if (elementos.couponInput) {
+    elementos.couponInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        applyCoupon();
+      }
+    });
+  }
+
+  const offerCtas = document.querySelectorAll('.offer-cta');
+  offerCtas.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = document.getElementById('lancamentos');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+      showToast('Use o cupom exibido no banner ao finalizar a compra.', 'success');
+    });
+  });
 
   // Modal events
   elementos.closeModal.addEventListener('click', closeProductModal);
@@ -915,6 +1080,7 @@ function initEvents() {
 
 function init() {
   loadStockState();
+  loadCouponState();
   renderOfferCarousel();
   initOfferCarousel();
   renderProdutos();
@@ -922,4 +1088,10 @@ function init() {
   initEvents();
 }
 
-init();
+// Inicializar imediatamente se o DOM já estiver pronto, senão esperar
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  // DOM já está pronto, inicializar imediatamente
+  init();
+}
