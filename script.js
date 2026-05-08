@@ -326,7 +326,7 @@ function getCheckboxValues(ids) {
   const selected = Array.from(document.querySelectorAll(ids.join(',')))
     .filter(checkbox => checkbox.checked)
     .map(checkbox => checkbox.value);
-  return selected.length ? selected : ['all'];
+  return selected;
 }
 
 function filterProdutos() {
@@ -346,15 +346,16 @@ function filterProdutos() {
     // Busca
     const matchBusca = busca === '' || nome.includes(busca);
 
-    // Tipo (seleção/clube)
+    // Tipo (seleção/clube) - se nenhum checkbox marcado, mostra todos; se algum marcado, filtra
     let matchTipo = true;
-    if (filterTipo.length > 0 && !filterTipo.includes('all')) {
-      matchTipo = filterTipo.includes(tipo);
+    if (filterTipo.length > 0) {
+      const mappedFilterTipo = filterTipo.map(f => f === 'selecoes' ? 'selecao' : f === 'clubes' ? 'clube' : f);
+      matchTipo = mappedFilterTipo.includes(tipo);
     }
 
-    // Disponibilidade (estoque/encomenda)
+    // Disponibilidade (estoque/encomenda) - se nenhum checkbox marcado, mostra todos; se algum marcado, filtra
     let matchDisp = true;
-    if (filterDisp.length > 0 && !filterDisp.includes('all')) {
+    if (filterDisp.length > 0) {
       const filterDispNorm = filterDisp.map(f => f === 'instock' ? 'estoque' : f === 'preorder' ? 'encomenda' : f);
       matchDisp = filterDispNorm.includes(disp);
     }
@@ -952,13 +953,19 @@ function renderCarrinho() {
     const produto = produtos.find(prod => prod.id === parseInt(item.id.split('-')[0]));
     const itemCard = document.createElement('div');
     itemCard.className = 'cart-item';
+    const itemTotal = item.preco * item.quantidade;
+    const personalizacaoLabel = item.personalizacao && (item.personalizacao.nome || item.personalizacao.numero)
+      ? `${item.personalizacao.nome || ''} ${item.personalizacao.numero ? '#' + item.personalizacao.numero : ''}`
+      : '';
+
     itemCard.innerHTML = `
       <img src="${item.imagem}" alt="${item.nome}" />
       <div class="cart-item-info">
         <strong>${item.nome}</strong>
+        <span class="cart-item-price">${formatPrice(item.preco)}</span>
         <div class="cart-item-meta">
-          <span>Tamanho: ${item.tamanho}</span>
-          ${item.personalizacao && (item.personalizacao.nome || item.personalizacao.numero) ? `<span>${item.personalizacao.nome || ''} ${item.personalizacao.numero ? '#' + item.personalizacao.numero : ''}</span>` : ''}
+          <span>Tam: ${item.tamanho}</span>
+          ${personalizacaoLabel ? `<span>${personalizacaoLabel}</span>` : ''}
         </div>
         <div class="cart-item-actions">
           <div class="quantity-control">
@@ -1045,30 +1052,10 @@ function initEvents() {
       }
     });
 
-    // Add change listeners to all filter checkboxes
+    // Add change listeners to all filter checkboxes (multi-select enabled)
     const filterCheckboxes = document.querySelectorAll('input[type="checkbox"][id^="filter-"]');
     filterCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', () => {
-        // Handle availability filter group
-        if (checkbox.id.startsWith('filter-') && !checkbox.id.startsWith('filter-cat-')) {
-          if (checkbox.id === 'filter-all' && checkbox.checked) {
-            document.getElementById('filter-instock').checked = false;
-            document.getElementById('filter-preorder').checked = false;
-          } else if (checkbox.checked && checkbox.id !== 'filter-all') {
-            document.getElementById('filter-all').checked = false;
-          }
-        }
-        // Handle category filter group
-        if (checkbox.id.startsWith('filter-cat-')) {
-          if (checkbox.id === 'filter-cat-all' && checkbox.checked) {
-            document.getElementById('filter-cat-selecoes').checked = false;
-            document.getElementById('filter-cat-clubes').checked = false;
-          } else if (checkbox.checked && checkbox.id !== 'filter-cat-all') {
-            document.getElementById('filter-cat-all').checked = false;
-          }
-        }
-        filterProdutos();
-      });
+      checkbox.addEventListener('change', filterProdutos);
     });
   }
 
