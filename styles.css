@@ -19,9 +19,12 @@
   --color-bg-light: #0d0d0d;
   --color-bg-alt: #141414;
   --color-border: #2b2b2b;
+  --color-border-light: rgba(255, 255, 255, 0.07);
   --color-success: #28a745;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-hover: rgba(255, 255, 255, 0.08);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
   --shadow-base: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 10px 28px rgba(0, 0, 0, 0.4);
@@ -251,7 +254,8 @@ a:hover {
   border-radius: 12px;
   font-size: 0.95rem;
   background: var(--color-bg-alt);
-  color: var(--color-text); 
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
   transition: all 0.3s ease;
 }
 
@@ -424,25 +428,6 @@ a:hover {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--color-text);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.3s ease;
-  opacity: 0;
-}
-
-.hero-nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
   background: rgba(255, 255, 255, 0.12);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -463,6 +448,8 @@ a:hover {
 .hero-carousel:hover .hero-nav {
   opacity: 1;
 }
+
+/* ====== end hero-nav (duplicate removed) ====== */
 
 .hero-nav.prev {
   left: 1.5rem;
@@ -986,7 +973,7 @@ a:hover {
 .product-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(29, 209, 161, 0.2);
+  border-color: rgba(219, 180, 44, 0.25);
 }
 
 .product-image-wrapper {
@@ -1543,6 +1530,7 @@ a:hover {
   font-size: 0.8rem;
   color: var(--color-success);
   min-height: 1.2em;
+  transition: color 0.3s ease;
 }
 
 .cart-total {
@@ -1609,7 +1597,8 @@ a:hover {
 }
 
 .toast.info {
-  background: var(--color-text);
+  background: var(--color-bg-alt);
+  color: var(--color-text);
 }
 
 @keyframes slideInRight {

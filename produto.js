@@ -240,31 +240,97 @@ function atualizarStatusBadge() {
 // GALERIA DE IMAGENS
 // ============================================
 
-function criarGaleria() {
+function checkImageExists(imagePath) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = imagePath;
+  });
+}
+
+function buildVariationPath(basePath, index) {
+  // Append -N before extension: "img/nome.jpg" → "img/nome-2.jpg"
+  return basePath.replace(/\.(\w+)$/, `-${index}.$1`);
+}
+
+function getBaseWithoutNumber(path) {
+  // Remove trailing -NUMBER before extension: "img/brasil-2-2627-1.jpg" → "img/brasil-2-2627"
+  // Also handles: "img/brasil-2-2627.jpg" → "img/brasil-2-2627" (no change if no -N suffix)
+  const match = path.match(/^(.+?)(?:-\d+)?(\.\w+)$/);
+  if (!match) return path;
+  // Be careful: only strip if the last group before extension is -\d+
+  // "img/x-1.jpg" → return "img/x" + ".jpg", then rebuild
+  const basename = match[1];
+  const ext = match[2];
+  // But we need to know if the original had a -N suffix already
+  const originalHadSuffix = path.match(/-\d+\.\w+$/);
+  if (originalHadSuffix) {
+    return path.replace(/-\d+(\.\w+)$/, '$1');
+  }
+  return path;
+}
+
+async function criarGaleria() {
   const produto = produtoAtual;
-  const placeholder = 'data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000"><rect width="100%25" height="100%25" fill="%23ffffff"/></svg>';
-  const imagens = Array.isArray(produto.imagens) && produto.imagens.length > 0
+
+  // Get base images from data
+  const imagensBase = Array.isArray(produto.imagens) && produto.imagens.length > 0
     ? produto.imagens
     : produto.imagem
       ? [produto.imagem]
-      : [placeholder];
+      : [];
+
+  const firstImage = imagensBase[0];
+  if (!firstImage) return;
+
+  const imagensDetectadas = [];
+
+  // Step 1: Check if the first image path exists as-is
+  let mainImage = firstImage;
+  const firstExists = await checkImageExists(firstImage);
+  if (!firstExists) {
+    // Try with -1 suffix: "img/x.jpg" → "img/x-1.jpg"
+    const with1 = firstImage.replace(/\.(\w+)$/, '-1.$1');
+    if (await checkImageExists(with1)) mainImage = with1;
+  }
+
+  imagensDetectadas.push(mainImage);
+
+  // Step 2: Determine the base name to search for variations
+  // Get the part before any -\d+\.ext at the end
+  const mainBase = mainImage.replace(/-\d+(\.\w+)$/, '$1');
+
+  // Try variations 1 through 5 (skip the index we already have)
+  for (let i = 1; i <= 5; i++) {
+    const testPath = mainBase.replace(/\.(\w+)$/, `-${i}.$1`);
+    if (testPath === mainImage) continue; // skip the one we already have
+    if (await checkImageExists(testPath)) {
+      imagensDetectadas.push(testPath);
+    }
+  }
+
+  // Step 3: Add any extra images from the data that weren't detected
+  for (const img of imagensBase) {
+    if (!imagensDetectadas.includes(img) && await checkImageExists(img)) {
+      imagensDetectadas.push(img);
+    }
+  }
 
   // Imagem principal
-  elementos.imgPrincipal.src = imagens[0];
+  elementos.imgPrincipal.src = imagensDetectadas[0];
   elementos.imgPrincipal.alt = produto.nome;
 
   // Miniaturas
   elementos.miniaturaContainer.innerHTML = '';
-  imagens.forEach((imagem, index) => {
+  imagensDetectadas.forEach((imagem, index) => {
     const miniatura = document.createElement('div');
     miniatura.className = 'miniatura' + (index === 0 ? ' ativa' : '');
     miniatura.innerHTML = `<img src="${imagem}" alt="Imagem ${index + 1}">`;
     
     miniatura.addEventListener('click', () => {
-      // Atualizar imagem principal
       elementos.imgPrincipal.src = imagem;
       
-      // Atualizar miniatura ativa
       document.querySelectorAll('.miniatura').forEach(m => {
         m.classList.remove('ativa');
       });
@@ -273,6 +339,12 @@ function criarGaleria() {
 
     elementos.miniaturaContainer.appendChild(miniatura);
   });
+  
+  // Hide thumbnail container if only 1 image
+  const thumbnailsWrapper = document.querySelector('.miniaturas');
+  if (thumbnailsWrapper) {
+    thumbnailsWrapper.style.display = imagensDetectadas.length <= 1 ? 'none' : '';
+  }
 }
 
 // ============================================
