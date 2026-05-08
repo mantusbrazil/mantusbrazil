@@ -246,40 +246,44 @@ const ofertas = [
   }
 ];
 
-const elementos = {
-  produtos: document.getElementById('produtos'),
-  productSearch: document.getElementById('product-search'),
-  filterBtn: document.getElementById('filter-btn'),
-  filterMenu: document.getElementById('filter-menu'),
-  listaCarrinho: document.getElementById('lista-carrinho'),
-  totalPedido: document.getElementById('total-pedido'),
-  badgeTotalItens: document.getElementById('badge-total-itens'),
-  cartSummaryText: document.getElementById('cart-summary-text'),
-  drawerOverlay: document.getElementById('drawer-overlay'),
-  btnVerCarrinho: document.getElementById('btn-ver-carrinho'),
-  btnFinalizar: document.getElementById('finalizar'),
-  btnCloseCart: document.getElementById('close-cart'),
-  carrinhoDrawer: document.getElementById('carrinho'),
-  couponInput: document.getElementById('coupon-code'),
-  btnApplyCoupon: document.getElementById('apply-coupon'),
-  couponMessage: document.getElementById('coupon-message'),
-  toastContainer: document.getElementById('toast-container'),
-  // Modal elements
-  productModal: document.getElementById('product-modal'),
-  modalTitle: document.getElementById('modal-title'),
-  modalProductImage: document.getElementById('modal-product-image'),
-  modalProductName: document.getElementById('modal-product-name'),
-  modalProductPrice: document.getElementById('modal-product-price'),
-  sizeSelect: document.getElementById('size-select'),
-  customName: document.getElementById('custom-name'),
-  customNumber: document.getElementById('custom-number'),
-  productForm: document.getElementById('product-form'),
-  btnCancelModal: document.getElementById('btn-cancel-modal'),
-  btnConfirmModal: document.getElementById('btn-confirm-modal'),
-  closeModal: document.getElementById('close-modal')
-};
-
 let carrinho = JSON.parse(localStorage.getItem(STORAGE_CART_KEY)) || [];
+
+// Inicializar elementos após DOM estar pronto
+function initializeElements() {
+  return {
+    produtos: document.getElementById('produtos'),
+    productSearch: document.getElementById('product-search'),
+    filterBtn: document.getElementById('filter-btn'),
+    filterMenu: document.getElementById('filter-menu'),
+    listaCarrinho: document.getElementById('lista-carrinho'),
+    totalPedido: document.getElementById('total-pedido'),
+    badgeTotalItens: document.getElementById('badge-total-itens'),
+    cartSummaryText: document.getElementById('cart-summary-text'),
+    drawerOverlay: document.getElementById('drawer-overlay'),
+    btnVerCarrinho: document.getElementById('btn-ver-carrinho'),
+    btnFinalizar: document.getElementById('finalizar'),
+    btnCloseCart: document.getElementById('close-cart'),
+    carrinhoDrawer: document.getElementById('carrinho'),
+    couponInput: document.getElementById('coupon-code'),
+    btnApplyCoupon: document.getElementById('apply-coupon'),
+    couponMessage: document.getElementById('coupon-message'),
+    toastContainer: document.getElementById('toast-container'),
+    productModal: document.getElementById('product-modal'),
+    modalTitle: document.getElementById('modal-title'),
+    modalProductImage: document.getElementById('modal-product-image'),
+    modalProductName: document.getElementById('modal-product-name'),
+    modalProductPrice: document.getElementById('modal-product-price'),
+    sizeSelect: document.getElementById('size-select'),
+    customName: document.getElementById('custom-name'),
+    customNumber: document.getElementById('custom-number'),
+    productForm: document.getElementById('product-form'),
+    btnCancelModal: document.getElementById('btn-cancel-modal'),
+    btnConfirmModal: document.getElementById('btn-confirm-modal'),
+    closeModal: document.getElementById('close-modal')
+  };
+}
+
+let elementos = {};
 
 function formatPrice(value) {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -326,31 +330,60 @@ function getCheckboxValues(ids) {
 }
 
 function filterProdutos() {
-  const termo = elementos.productSearch.value.trim().toLowerCase();
-  const selectedAvailability = getCheckboxValues(['#filter-all', '#filter-instock', '#filter-preorder']);
-  const selectedCategories = getCheckboxValues(['#filter-cat-all', '#filter-cat-selecoes', '#filter-cat-clubes']);
+  const searchInput = document.getElementById('product-search');
+  const busca = (searchInput?.value || '').toLowerCase();
+  const filterTipo = Array.from(document.querySelectorAll('input[id^="filter-cat-"]:checked')).map(el => el.value);
+  const filterDisp = Array.from(document.querySelectorAll('input[id^="filter-"]:not([id^="filter-cat-"]):checked')).map(el => el.value);
 
-  return produtos.filter(produto => {
-    const nomeMatch = produto.nome.toLowerCase().includes(termo);
-    if (!nomeMatch) return false;
+  const produtos = document.querySelectorAll('.product-card');
+  let visibleCount = 0;
 
-    const productStock = getTotalStock(produto.estoque);
-    const isInStock = productStock > 0;
-    const productCategory = isSelecaoProduto(produto) ? 'selecoes' : 'clubes';
+  produtos.forEach(prod => {
+    const nome = prod.getAttribute('data-nome') || '';
+    const tipo = prod.getAttribute('data-tipo') || '';
+    const disp = prod.getAttribute('data-disponibilidade') || '';
 
-    if (!selectedAvailability.includes('all')) {
-      if (selectedAvailability.includes('instock') && !isInStock) return false;
-      if (selectedAvailability.includes('preorder') && isInStock) return false;
-      if (!selectedAvailability.some(value => value === 'instock' || value === 'preorder')) return false;
+    // Busca
+    const matchBusca = busca === '' || nome.includes(busca);
+
+    // Tipo (seleção/clube)
+    let matchTipo = true;
+    if (filterTipo.length > 0 && !filterTipo.includes('all')) {
+      matchTipo = filterTipo.includes(tipo);
     }
 
-    if (!selectedCategories.includes('all')) {
-      if (selectedCategories.includes('selecoes') && productCategory !== 'selecoes') return false;
-      if (selectedCategories.includes('clubes') && productCategory !== 'clubes') return false;
+    // Disponibilidade (estoque/encomenda)
+    let matchDisp = true;
+    if (filterDisp.length > 0 && !filterDisp.includes('all')) {
+      const filterDispNorm = filterDisp.map(f => f === 'instock' ? 'estoque' : f === 'preorder' ? 'encomenda' : f);
+      matchDisp = filterDispNorm.includes(disp);
     }
 
-    return true;
+    // Mostrar/ocultar produto
+    if (matchBusca && matchTipo && matchDisp) {
+      prod.style.display = 'block';
+      visibleCount++;
+    } else {
+      prod.style.display = 'none';
+    }
   });
+
+  // Mostrar mensagem se nenhum encontrado
+  if (visibleCount === 0) {
+    const produtosContainer = document.getElementById('produtos');
+    let msg = produtosContainer?.querySelector('.no-products-message');
+    if (!msg) {
+      msg = document.createElement('div');
+      msg.className = 'no-products-message';
+      msg.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary);';
+      msg.textContent = 'Nenhum produto encontrado.';
+      produtosContainer?.appendChild(msg);
+    }
+  } else {
+    const produtosContainer = document.getElementById('produtos');
+    const msg = produtosContainer?.querySelector('.no-products-message');
+    if (msg) msg.remove();
+  }
 }
 
 function saveCart() {
@@ -414,7 +447,10 @@ function showToast(message, type = 'success') {
   toast.style.opacity = '1';
   toast.style.transition = 'opacity 0.3s ease';
 
-  elementos.toastContainer.appendChild(toast);
+  const toastContainer = document.getElementById('toast-container');
+  if (toastContainer) {
+    toastContainer.appendChild(toast);
+  }
 
   setTimeout(() => {
     toast.style.opacity = '0';
@@ -426,16 +462,30 @@ function showToast(message, type = 'success') {
 }
 
 function openCart() {
-  elementos.carrinhoDrawer.classList.add('open');
-  elementos.drawerOverlay.classList.add('visible');
-  elementos.carrinhoDrawer.setAttribute('aria-hidden', 'false');
+  const carrinhoDrawer = document.getElementById('carrinho');
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  
+  if (carrinhoDrawer) {
+    carrinhoDrawer.classList.add('open');
+    carrinhoDrawer.setAttribute('aria-hidden', 'false');
+  }
+  if (drawerOverlay) {
+    drawerOverlay.classList.add('visible');
+  }
   document.body.classList.add('cart-open');
 }
 
 function closeCart() {
-  elementos.carrinhoDrawer.classList.remove('open');
-  elementos.drawerOverlay.classList.remove('visible');
-  elementos.carrinhoDrawer.setAttribute('aria-hidden', 'true');
+  const carrinhoDrawer = document.getElementById('carrinho');
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  
+  if (carrinhoDrawer) {
+    carrinhoDrawer.classList.remove('open');
+    carrinhoDrawer.setAttribute('aria-hidden', 'true');
+  }
+  if (drawerOverlay) {
+    drawerOverlay.classList.remove('visible');
+  }
   document.body.classList.remove('cart-open');
 }
 
@@ -519,8 +569,10 @@ function animateAddButton(id) {
 
 function atualizarResumoDoCarrinho() {
   const totalItens = carrinho.reduce((sum, item) => sum + item.quantidade, 0);
-  elementos.badgeTotalItens.textContent = String(totalItens);
-  elementos.cartSummaryText.textContent = totalItens === 0 ? 'Nenhum item no carrinho' : `${totalItens} item${totalItens === 1 ? '' : 's'} no carrinho`;
+  const badgeTotalItens = document.getElementById('badge-total-itens');
+  if (badgeTotalItens) {
+    badgeTotalItens.textContent = String(totalItens);
+  }
 }
 
 function initializeImageGallery(card, imagemBase, produtoId) {
@@ -640,7 +692,7 @@ function initializeImageGallery(card, imagemBase, produtoId) {
   });
 }
 
-function renderProdutos(listaProdutos = filterProdutos()) {
+function renderProdutos(listaProdutos = produtos) {
   elementos.produtos.innerHTML = '';
 
   if (listaProdutos.length === 0) {
@@ -652,6 +704,8 @@ function renderProdutos(listaProdutos = filterProdutos()) {
     const totalEstoque = getTotalStock(produto.estoque);
     const inStock = totalEstoque > 0;
     const precoFormatado = formatPrice(produto.preco);
+    const tipo = isSelecaoProduto(produto) ? 'selecao' : 'clube';
+    const disponibilidade = inStock ? 'estoque' : 'encomenda';
     
     // Definir badge baseado em estoque
     let badgeClass = '';
@@ -666,6 +720,11 @@ function renderProdutos(listaProdutos = filterProdutos()) {
 
     const card = document.createElement('article');
     card.className = 'product-card';
+    card.setAttribute('data-id', produto.id);
+    card.setAttribute('data-nome', produto.nome.toLowerCase());
+    card.setAttribute('data-tipo', tipo);
+    card.setAttribute('data-disponibilidade', disponibilidade);
+    
     card.innerHTML = `
       <div class="product-image-wrapper">
         ${badgeText ? `<span class="product-badge ${badgeClass}">${badgeText}</span>` : ''}
@@ -961,23 +1020,28 @@ function initEvents() {
   if (eventsInitialized) return;
   eventsInitialized = true;
 
-  // Search
-  elementos.productSearch.addEventListener('input', () => renderProdutos());
+  // Search - usar input para tempo real
+  const productSearch = document.getElementById('product-search');
+  if (productSearch) {
+    productSearch.addEventListener('input', filterProdutos);
+  }
 
   // Filter dropdown toggle
-  if (elementos.filterBtn && elementos.filterMenu) {
-    elementos.filterBtn.addEventListener('click', (e) => {
+  const filterBtn = document.getElementById('filter-btn');
+  const filterMenu = document.getElementById('filter-menu');
+  if (filterBtn && filterMenu) {
+    filterBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const isOpen = elementos.filterMenu.getAttribute('aria-hidden') === 'false';
-      elementos.filterMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
-      elementos.filterBtn.setAttribute('aria-expanded', !isOpen);
+      const isOpen = filterMenu.getAttribute('aria-hidden') === 'false';
+      filterMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+      filterBtn.setAttribute('aria-expanded', !isOpen);
     });
 
     // Close filter menu when clicking outside
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.filter-dropdown')) {
-        elementos.filterMenu.setAttribute('aria-hidden', 'true');
-        elementos.filterBtn.setAttribute('aria-expanded', 'false');
+        filterMenu.setAttribute('aria-hidden', 'true');
+        filterBtn.setAttribute('aria-expanded', 'false');
       }
     });
 
@@ -1003,26 +1067,33 @@ function initEvents() {
             document.getElementById('filter-cat-all').checked = false;
           }
         }
-        renderProdutos();
+        filterProdutos();
       });
     });
   }
 
-  const cartButtons = [elementos.btnVerCarrinho, document.querySelector('.btn-cart')].filter(Boolean);
+  const btnVerCarrinho = document.getElementById('btn-ver-carrinho');
+  const cartButtons = [btnVerCarrinho, document.querySelector('.btn-cart')].filter(Boolean);
   const uniqueCartButtons = [...new Set(cartButtons)];
   uniqueCartButtons.forEach(button => button.addEventListener('click', openCart));
 
-  if (elementos.drawerOverlay) {
-    elementos.drawerOverlay.addEventListener('click', closeCart);
+  const drawerOverlay = document.getElementById('drawer-overlay');
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener('click', closeCart);
   }
-  elementos.btnFinalizar.addEventListener('click', finalizarPedido);
-
-  if (elementos.btnApplyCoupon) {
-    elementos.btnApplyCoupon.addEventListener('click', applyCoupon);
+  const btnFinalizar = document.getElementById('finalizar');
+  if (btnFinalizar) {
+    btnFinalizar.addEventListener('click', finalizarPedido);
   }
 
-  if (elementos.couponInput) {
-    elementos.couponInput.addEventListener('keydown', event => {
+  const btnApplyCoupon = document.getElementById('apply-coupon');
+  if (btnApplyCoupon) {
+    btnApplyCoupon.addEventListener('click', applyCoupon);
+  }
+
+  const couponInput = document.getElementById('coupon-code');
+  if (couponInput) {
+    couponInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
         event.preventDefault();
         applyCoupon();
@@ -1040,14 +1111,21 @@ function initEvents() {
   });
 
   // Modal events
-  elementos.closeModal.addEventListener('click', closeProductModal);
-  elementos.btnCancelModal.addEventListener('click', closeProductModal);
-  elementos.productModal.addEventListener('click', (e) => {
-    if (e.target === elementos.productModal) {
-      closeProductModal();
-    }
-  });
-  elementos.productForm.addEventListener('submit', handleProductFormSubmit);
+  const closeModal = document.getElementById('close-modal');
+  const btnCancelModal = document.getElementById('btn-cancel-modal');
+  const productModal = document.getElementById('product-modal');
+  const productForm = document.getElementById('product-form');
+  
+  if (closeModal) closeModal.addEventListener('click', closeProductModal);
+  if (btnCancelModal) btnCancelModal.addEventListener('click', closeProductModal);
+  if (productModal) {
+    productModal.addEventListener('click', (e) => {
+      if (e.target === productModal) {
+        closeProductModal();
+      }
+    });
+  }
+  if (productForm) productForm.addEventListener('submit', handleProductFormSubmit);
 
   // Botão "Comprar agora" no banner
   const btnComprarAgora = document.querySelector('.hero .btn-primary');
@@ -1079,6 +1157,9 @@ function initEvents() {
 }
 
 function init() {
+  // Inicializar elemento após DOM estar pronto
+  elementos = initializeElements();
+  
   loadStockState();
   loadCouponState();
   renderOfferCarousel();
