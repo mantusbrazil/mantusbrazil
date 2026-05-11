@@ -275,7 +275,7 @@ const PRODUTOS_DB = [
     nome: 'Camisa do Arsenal I 25/26',
     preco: 219.9,
     descricao: 'Versão torcedor - temporada 25/26',
-    imagens: ['img/arsenal-1-2526.jpg'],
+    imagens: ['img/arsenal-1-2526-1.jpg'],
     tamanhos: ['P', 'M', 'G', 'GG'],
     estoque: { P: 2, M: 1, G: 1, GG: 1 }
   },
@@ -284,7 +284,7 @@ const PRODUTOS_DB = [
     nome: 'Camisa do Atlético de Madrid II 25/26',
     preco: 209.9,
     descricao: 'Segunda camisa - temporada 25/26',
-    imagens: ['img/atletico-madrid-2-2526.jpg'],
+    imagens: ['img/atlético-de-madrid-2-2526-1.jpg'],
     tamanhos: ['P', 'M', 'G', 'GG'],
     estoque: { P: 1, M: 2, G: 1, GG: 0 }
   }

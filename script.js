@@ -41,8 +41,8 @@ const produtos = [
   { id: 29, nome: 'Camisa do Borussia Dortmund I 25/26', preco: 219.9, prazo: 'Entrega imediata', imagem: 'img/borussia-dortmund-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 2, M: 1, G: 2, GG: 0 } },
   { id: 30, nome: 'Camisa do Botafogo I 24/25', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/botafogo-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 3, M: 2, G: 1, GG: 1 } },
   { id: 31, nome: 'Camisa do Chelsea I 25/26', preco: 219.9, prazo: 'Entrega imediata', imagem: 'img/chelsea-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 2, M: 2, G: 1, GG: 0 } },
-  { id: 32, nome: 'Camisa do Arsenal I 25/26', preco: 219.9, prazo: 'Entrega imediata', imagem: 'img/arsenal-1-2526.jpg', destaque: 'Em estoque', estoque: { P: 2, M: 1, G: 1, GG: 1 } },
-  { id: 33, nome: 'Camisa do Atlético de Madrid II 25/26', preco: 209.9, prazo: 'Entrega imediata', imagem: 'img/atletico-madrid-2-2526.jpg', destaque: 'Em estoque', estoque: { P: 1, M: 2, G: 1, GG: 0 } }
+  { id: 32, nome: 'Camisa do Arsenal I 25/26', preco: 219.9, prazo: 'Entrega imediata', imagem: 'img/arsenal-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 2, M: 1, G: 1, GG: 1 } },
+  { id: 33, nome: 'Camisa do Atlético de Madrid II 25/26', preco: 209.9, prazo: 'Entrega imediata', imagem: 'img/atlético-de-madrid-2-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 1, M: 2, G: 1, GG: 0 } }
 ];
 
 const ofertas = [
