@@ -12,7 +12,6 @@ let activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || '';
 
 const produtos = [
   { id: 1, nome: 'Camisa do Brasil I 26/27', preco: 199.9, prazo: 'Entrega imediata', imagem: 'img/brasil-1-2627-1.jpg', destaque: '🔥 Mais vendido', estoque: { P: 4, M: 2, G: 0, GG: 1 } },
-  { id: 2, nome: 'Camisa da Argentina I 26/27', preco: 189.9, prazo: 'Entrega em até 20 dias', imagem: 'img/argentina-1-2627-1.jpg', destaque: 'Pré-venda exclusiva', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
   { id: 3, nome: 'Camisa do Real Madrid I 26/27', preco: 249.9, prazo: 'Últimas unidades', imagem: 'img/real-madrid-1-2627.jpg', destaque: 'Últimas unidades', estoque: { P: 1, M: 3, G: 2, GG: 0 } },
   { id: 4, nome: 'Camisa da Espanha I 26/27', preco: 179.9, prazo: 'Entrega imediata', imagem: 'img/espanha-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 3, M: 2, G: 1, GG: 2 } },
   { id: 5, nome: 'Camisa da Espanha II 26/27', preco: 179.9, prazo: 'Sob encomenda', imagem: 'img/espanha-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
@@ -385,7 +384,7 @@ function initializeImageGallery(card, imagemBase, produtoId) {
   const wrapper = card.querySelector('.product-image-wrapper');
 
   const getBase = (path) => path.replace(/-\d+(\.\w+)$/, '$1');
-  const buildPath = (base, idx) => idx === 1 ? base : base.replace(/(\.\w+)$/, `-${idx}$1`);
+  const buildPath = (base, idx) => base.replace(/(\.\w+)$/, `-${idx}$1`);
 
   const checkExists = (path) => new Promise(res => { const i = new Image(); i.onload = () => res(true); i.onerror = () => res(false); i.src = path; });
 

@@ -1003,7 +1003,7 @@ a:hover {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-bg-alt);
   color: var(--color-text);
   border: none;
   display: flex;
@@ -1018,7 +1018,7 @@ a:hover {
 }
 
 .image-nav:hover {
-  background: white;
+  background: var(--color-primary);
   transform: translateY(-50%) scale(1.1);
 }
 
@@ -1051,7 +1051,7 @@ a:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--color-bg-alt);
   color: var(--color-text);
   z-index: 2;
 }

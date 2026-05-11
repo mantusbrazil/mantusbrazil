@@ -10,15 +10,6 @@ const PRODUTOS_DB = [
     estoque: { P: 4, M: 2, G: 0, GG: 1 }
   },
   {
-    id: 2,
-    nome: 'Camisa da Argentina I 26/27',
-    preco: 189.9,
-    descricao: 'Versão torcedor com tecido leve e respirável',
-    imagens: ['img/argentina-1-2627-1.jpg'],
-    tamanhos: ['P', 'M', 'G', 'GG'],
-    estoque: { P: 0, M: 0, G: 0, GG: 0 }
-  },
-  {
     id: 3,
     nome: 'Camisa do Real Madrid I 26/27',
     preco: 249.9,
