@@ -202,12 +202,63 @@ function gerarTabelaMedidas() {
 
 function gerarDescricaoCompleta() {
   const produto = produtoAtual;
-  const descricaoBase = produto.descricao ? produto.descricao.replace(/\.*$/, '') : '';
-  elementos.descricaoCompleta.textContent = `${descricaoBase}. A camisa ${produto.clube} ${produto.temporada} versão ${produto.tipo.toLowerCase()} combina conforto e estilo com tecido ${produto.material.toLowerCase()}, alta respirabilidade e acabamento premium para uso casual ou jogos.`;
+  const nomeClube = produto.clube;
+  const cor = produto.cor;
+  const marca = produto.marca;
+  const temporada = produto.temporada;
+  const tipo = produto.tipo.toLowerCase();
+  const material = produto.material.toLowerCase();
+  const origem = produto.origem.toLowerCase();
+  const isNacional = origem === 'nacional';
+
+  // Descrições únicas baseadas no tipo de time
+  const descricoes = {
+    selecao: [
+      `Vista as cores do ${nomeClube} com esta camisa oficial ${marca} ${temporada}.`,
+      `Confeccionada em ${material} de alta qualidade, esta versão ${tipo} proporciona conforto e durabilidade.`,
+      `O escudo bordado e os detalhes em ${cor} fazem desta peça um item obrigatório para qualquer torcedor.`,
+      `Ideal para jogos, torneios ou uso casual no dia a dia.`
+    ],
+    clube: [
+      `Represente o ${nomeClube} com esta camisa oficial ${marca} ${temporada}.`,
+      `Feita em ${material} respirável, esta versão ${tipo} oferece liberdade de movimento e frescor.`,
+      `Acabamento premium com escudo bordado e detalhes nas cores ${cor}.`,
+      `Produzida especialmente para torcedores que valorizam qualidade e autenticidade.`
+    ]
+  };
+
+  const timeTipo = isNacional ? 'nacional' : 'importado';
+  const itens = descricoes[extrairTipo(produto)] || descricoes.clube;
+  elementos.descricaoCompleta.innerHTML = itens.map(p => `<p style="margin-bottom:0.5rem;">${p}</p>`).join('');
+}
+
+function extrairTipo(produto) {
+  const nome = produto.nome;
+  if (/\b(Brasil|Argentina|Espanha|Inglaterra|França|Colômbia|Holanda|Itália|Portug(al)?|Estados Unidos)\b/i.test(nome)) return 'selecao';
+  return 'clube';
 }
 
 function gerarCaracteristicas() {
-  const itens = ['Tecido leve', 'Alta respirabilidade', 'Escudo premium', 'Ideal para uso casual'];
+  const produto = produtoAtual;
+  const nomeClube = produto.clube;
+  const cor = produto.cor;
+  const marca = produto.marca;
+
+  // Características únicas por produto
+  const caracteristicasBase = [
+    `Tecido ${produto.material.toLowerCase()} respirável`,
+    `Modelagem confortável tipo ${produto.tipo.toLowerCase()}`,
+    `Escudo do ${nomeClube} bordado`,
+    `Marca: ${marca} - original e licenciada`
+  ];
+
+  // Adiciona características extras baseadas no time
+  const extras = extrairTipo(produto) === 'selecao'
+    ? [`Detalhes nas cores ${cor}`, 'Ideal para usar em jogos e eventos esportivos', 'Tecido leve para alta performance']
+    : [`Detalhes nas cores ${cor}`, 'Perfeita para o dia a dia do torcedor', 'Resistente e fácil de lavar'];
+
+  const itens = [...caracteristicasBase, ...extras];
+
   elementos.caracteristicasGrid.innerHTML = itens.map(item => `
     <div class="caracteristica-item">
       <span class="caracteristica-icone">✓</span>

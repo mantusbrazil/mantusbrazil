@@ -1,7 +1,9 @@
-﻿const STORAGE_CART_KEY = 'carrinho_camisas_venda';
-const STORAGE_STOCK_KEY = 'estoque_camisas_venda';
+﻿// ============================================
+// SCRIPT PRINCIPAL - PÁGINA INICIAL
+// ============================================
+
+const STORAGE_CART_KEY = 'carrinho_camisas_venda';
 const STORAGE_COUPON_KEY = 'carrinho_cupom_venda';
-const SIZE_ORDER = ['P', 'M', 'G', 'GG', 'G1', 'G2', 'G3'];
 
 const cupons = {
   "mantus10": { desconto: 0.10, tipo: 'geral' },
@@ -10,40 +12,8 @@ const cupons = {
 
 let activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || '';
 
-const produtos = [
-  { id: 1, nome: 'Camisa do Brasil I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/brasil-1-2627-1.jpg', destaque: '🔥 Mais vendido', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 3, nome: 'Camisa do Real Madrid I 26/27', preco: 139.9, prazo: 'Últimas unidades', imagem: 'img/real-madrid-1-2627.jpg', destaque: 'Últimas unidades', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 4, nome: 'Camisa da Espanha I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/espanha-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 5, nome: 'Camisa da Espanha II 26/27', preco: 149.9, prazo: 'Sob encomenda', imagem: 'img/espanha-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 6, nome: 'Camisa de Portugal I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/portugal-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 7, nome: 'Camisa de Portugal II 26/27', preco: 149.9, prazo: 'Sob encomenda', imagem: 'img/portugal-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 8, nome: 'Camisa da Argentina I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/argentina-1-2627-1.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 9, nome: 'Camisa da Argentina II 26/27', preco: 149.9, prazo: 'Sob encomenda', imagem: 'img/argentina-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 10, nome: 'Camisa da Inglaterra I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/inglaterra-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 11, nome: 'Camisa da França I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/franca-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 12, nome: 'Camisa da França II 26/27', preco: 149.9, prazo: 'Sob encomenda', imagem: 'img/franca-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 13, nome: 'Camisa da Colômbia I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/colombia-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 14, nome: 'Camisa da Holanda I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/holanda-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 15, nome: 'Camisa da Itália I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/italia-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 16, nome: 'Camisa do Brasil II 26/27', preco: 149.9, prazo: 'Sob encomenda', imagem: 'img/brasil-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 17, nome: 'Camisa dos Estados Unidos I 26/27', preco: 149.9, prazo: 'Entrega imediata', imagem: 'img/estados-unidos-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 18, nome: 'Camisa do Corinthians I 26/27 (preta)', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/corinthians-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 19, nome: 'Camisa do Corinthians II 26/27 (laranja)', preco: 139.9, prazo: 'Sob encomenda', imagem: 'img/corinthians-2-2627.jpg', destaque: 'Sob encomenda', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 20, nome: 'Camisa do Barcelona I 26/27', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/barcelona-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 21, nome: 'Camisa do Real Madrid I 26/27', preco: 139.9, prazo: 'Últimas unidades', imagem: 'img/real-madrid-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 22, nome: 'Camisa do PSG I 26/27', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/psg-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 23, nome: 'Camisa do Santos I 26/27', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/santos-1-2627.jpg', destaque: 'Em estoque', estoque: { P: 0, M: 0, G: 0, GG: 0 } },
-  { id: 24, nome: 'Camisa do Atlético Mineiro I 24/25', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/atletico-mineiro-1-2526.jpg', destaque: 'Em estoque', estoque: { M: 11, G: 11, GG: 10, G1: 10, G2: 10 } },
-  { id: 25, nome: 'Camisa do Barcelona I 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/barcelona-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 13, M: 12, G: 11, GG: 11, G1: 10, G2: 10, G3: 10 } },
-  { id: 26, nome: 'Camisa do Barcelona III 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/barcelona-2-2526-1.jpg', destaque: 'Em estoque', estoque: { G1: 10, G2: 10 } },
-  { id: 27, nome: 'Camisa do Bayern de Munique II 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/bayern-de-munique-2-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 12, G: 11, GG: 10, G1: 10, G2: 10 } },
-  { id: 28, nome: 'Camisa do Benfica I 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/benfica-1-2526-1.jpg', destaque: 'Em estoque', estoque: { GG: 11, G1: 10 } },
-  { id: 29, nome: 'Camisa do Borussia Dortmund I 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/borussia-dortmund-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 12, M: 11, G: 12, GG: 10, G1: 10, G2: 10 } },
-  { id: 30, nome: 'Camisa do Botafogo I 24/25', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/botafogo-1-2526-1.jpg', destaque: 'Em estoque', estoque: { M: 12 } },
-  { id: 31, nome: 'Camisa do Chelsea I 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/chelsea-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 12, M: 12, G: 11, GG: 10, G1: 10, G2: 10 } },
-  { id: 32, nome: 'Camisa do Arsenal I 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/arsenal-1-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 12, GG: 11, G1: 10, G2: 10 } },
-  { id: 33, nome: 'Camisa do Atlético de Madrid II 25/26', preco: 139.9, prazo: 'Entrega imediata', imagem: 'img/atlético-de-madrid-2-2526-1.jpg', destaque: 'Em estoque', estoque: { P: 11, M: 12, G: 11, GG: 10, G1: 10 } }
-];
+// Usa a base centralizada de produtos (produtos-db.js)
+const produtos = PRODUTOS_DB;
 
 const ofertas = [
   {
@@ -67,8 +37,8 @@ const ofertas = [
     extra: 'Só essa semana',
     badge: 'Desconto progressivo',
     description: 'Escolha o kit perfeito para colecionar ou presentear quem ama futebol.',
-    image: 'img/brasil-1-2627.jpg',
-    backgroundImage: 'img/oferta-2.png'
+    image: 'img/santos-1-2627.jpg',
+    backgroundImage: 'img/oferta-1.png'
   }
 ];
 
@@ -83,7 +53,6 @@ function initializeElements() {
     listaCarrinho: document.getElementById('lista-carrinho'),
     totalPedido: document.getElementById('total-pedido'),
     badgeTotalItens: document.getElementById('badge-total-itens'),
-    cartSummaryText: document.getElementById('cart-summary-text'),
     drawerOverlay: document.getElementById('drawer-overlay'),
     btnVerCarrinho: document.getElementById('btn-ver-carrinho'),
     btnFinalizar: document.getElementById('finalizar'),
@@ -135,22 +104,12 @@ function getTipoPorTamanho(produto, tamanho) {
   return stock > 0 ? 'Em estoque' : 'Sob encomenda';
 }
 
-function getBadgeType(produto) {
-  return isProductPreorder(produto) ? 'badge-preorder' : 'badge-stock';
-}
-
 function isSelecaoProduto(produto) {
   return /\b(Brasil|Argentina|Espanha|Inglaterra|França|Colômbia|Holanda|Itália|Portug(al)?|Estados Unidos)\b/i.test(produto.nome);
 }
 
 function getProductCategoryLabel(produto) {
   return isSelecaoProduto(produto) ? 'Seleção' : 'Clube';
-}
-
-function getCheckboxValues(ids) {
-  return Array.from(document.querySelectorAll(ids.join(',')))
-    .filter(cb => cb.checked)
-    .map(cb => cb.value);
 }
 
 function filterProdutos() {
@@ -187,29 +146,23 @@ function filterProdutos() {
   });
 
   const container = document.getElementById('produtos');
+  const existingMsg = container?.querySelector('.no-products-message');
   if (visibleCount === 0) {
-    let msg = container?.querySelector('.no-products-message');
-    if (!msg) {
-      msg = document.createElement('div');
+    if (!existingMsg) {
+      const msg = document.createElement('div');
       msg.className = 'no-products-message';
       msg.style.cssText = 'grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary);';
       msg.textContent = 'Nenhum produto encontrado.';
       container?.appendChild(msg);
     }
   } else {
-    container?.querySelector('.no-products-message')?.remove();
+    existingMsg?.remove();
   }
 }
 
 function saveCart() {
   localStorage.setItem(STORAGE_CART_KEY, JSON.stringify(carrinho));
-  const stockData = produtos.reduce((acc, p) => { acc[p.id] = p.estoque; return acc; }, {});
-  localStorage.setItem(STORAGE_STOCK_KEY, JSON.stringify(stockData));
   localStorage.setItem(STORAGE_COUPON_KEY, activeCouponCode);
-}
-
-function loadCouponState() {
-  activeCouponCode = localStorage.getItem(STORAGE_COUPON_KEY) || '';
 }
 
 function getCoupon(code) {
@@ -246,13 +199,6 @@ function applyCoupon() {
   showToast(`Cupom "${code}" aplicado!`, 'success');
 }
 
-function loadStockState() {
-  const savedStock = JSON.parse(localStorage.getItem(STORAGE_STOCK_KEY));
-  if (savedStock) {
-    produtos.forEach(p => { if (savedStock[p.id]) p.estoque = savedStock[p.id]; });
-  }
-}
-
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
@@ -260,8 +206,8 @@ function showToast(message, type = 'success') {
   toast.style.opacity = '1';
   toast.style.transition = 'opacity 0.3s ease';
   document.getElementById('toast-container')?.appendChild(toast);
-  setTimeout(() => { toast.style.opacity = '0'; }, 3000);
-  setTimeout(() => { toast.remove(); }, 3300);
+  setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+  setTimeout(() => { toast.remove(); }, 2800);
 }
 
 function openCart() {
@@ -290,12 +236,14 @@ function openProductModal(produto, action = 'buy') {
   elementos.sizeSelect.innerHTML = '<option value="">Selecione um tamanho</option>';
   SIZE_ORDER.forEach(tamanho => {
     const stock = getSizeStock(produto, tamanho);
+    const opt = document.createElement('option');
+    opt.value = tamanho;
     if (stock > 0) {
-      const opt = document.createElement('option');
-      opt.value = tamanho;
       opt.textContent = `${tamanho} (${stock} disponível${stock === 1 ? '' : 'is'})`;
-      elementos.sizeSelect.appendChild(opt);
+    } else {
+      opt.textContent = `${tamanho} (sob encomenda)`;
     }
+    elementos.sizeSelect.appendChild(opt);
   });
 
   elementos.customName.value = '';
@@ -315,7 +263,6 @@ function closeProductModal() {
 function handleProductFormSubmit(event) {
   event.preventDefault();
   const productId = parseInt(elementos.productForm.dataset.productId, 10);
-  const action = elementos.productForm.dataset.action;
   const tamanho = elementos.sizeSelect.value;
   const nome = elementos.customName.value.trim();
   const numero = elementos.customNumber.value.trim();
@@ -409,7 +356,6 @@ function initializeImageGallery(card, imagemBase, produtoId) {
     return max;
   };
 
-  // Detect once on init and cache the result
   detectMax().then(m => {
     maxVariations = m;
     detectionDone = true;
@@ -417,7 +363,6 @@ function initializeImageGallery(card, imagemBase, produtoId) {
 
   const changeImg = async (dir) => {
     if (maxVariations <= 1) return;
-    // Ensure detection is complete
     if (!detectionDone) {
       maxVariations = await detectMax();
       detectionDone = true;
@@ -658,17 +603,26 @@ function initEvents() {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }));
   window.addEventListener('keydown', e => { if (e.key === 'Escape') { closeCart(); closeProductModal(); } });
+
+  // Mobile menu toggle
+  const toggleBtn = document.getElementById('navbar-toggle');
+  const navMenu = document.getElementById('navbar-menu');
+  if (toggleBtn && navMenu) {
+    toggleBtn.addEventListener('click', () => {
+      const isOpen = navMenu.classList.toggle('open');
+      toggleBtn.setAttribute('aria-expanded', isOpen);
+    });
+    navMenu.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        navMenu.classList.remove('open');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
 }
 
 function init() {
   elementos = initializeElements();
-  // Remove stale localStorage stock data to ensure consistency with hardcoded values
-  localStorage.removeItem(STORAGE_STOCK_KEY);
-  loadStockState();
-  // Save current correct stock data to localStorage
-  const stockData = produtos.reduce((acc, p) => { acc[p.id] = p.estoque; return acc; }, {});
-  localStorage.setItem(STORAGE_STOCK_KEY, JSON.stringify(stockData));
-  loadCouponState();
   renderOfferCarousel();
   initOfferCarousel();
   renderProdutos();
